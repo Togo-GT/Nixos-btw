@@ -74,30 +74,39 @@ in
   # Set timezone to Copenhagen (Central European Time)
   time.timeZone = "Europe/Copenhagen";
 
-  # Language and locale settings
+  # Enable and configure NTP for time synchronization
+services.timesyncd = {
+  enable = true;
+  servers = [
+    "0.dk.pool.ntp.org"
+    "1.dk.pool.ntp.org"
+    "2.dk.pool.ntp.org"
+    "3.dk.pool.ntp.org"
+  ];
+};
+
   i18n = {
-    # Default system language (English with UTF-8 character set)
-    defaultLocale = "en_US.UTF-8";
+  defaultLocale = "en_DK.UTF-8";  # Changed from en_US to en_DK
 
-    # List of languages to support on the system
-    supportedLocales = [
-      "en_US.UTF-8/UTF-8"  # English (USA) with UTF-8 encoding
-      "da_DK.UTF-8/UTF-8"  # Danish added
-    ];
+  # List of languages to support on the system
+  supportedLocales = [
+    "en_DK.UTF-8/UTF-8"  # Changed from en_US to en_DK
+    "da_DK.UTF-8/UTF-8"  # Danish
+  ];
 
-    # Extra environment variables for fine-tuning locale settings
-    extraLocaleSettings = {
-      LANG = "en_US.UTF-8";        # Default language for all applications
-      LC_CTYPE = "en_US.UTF-8";    # Character classification (letters, cases)
-      LC_NUMERIC = "en_US.UTF-8";  # Number formatting (decimal separator, thousands separator)
-      LC_TIME = "en_US.UTF-8";     # Date and time format
-      LC_MONETARY = "en_US.UTF-8"; # Currency format
-      LC_ADDRESS = "en_US.UTF-8";  # Address formatting
-      LC_IDENTIFICATION = "en_US.UTF-8"; # Locale metadata
-      LC_MEASUREMENT = "en_US.UTF-8";    # Measurement units (metric/imperial)
-      LC_PAPER = "en_US.UTF-8";          # Paper size (A4 or Letter)
-      LC_TELEPHONE = "en_US.UTF-8";      # Telephone number formatting
-      LC_NAME = "en_US.UTF-8";           # Name formatting
+  # Extra environment variables for fine-tuning locale settings
+  extraLocaleSettings = {
+    LANG = "en_DK.UTF-8";        # Changed from en_US to en_DK
+    LC_CTYPE = "en_DK.UTF-8";    # Changed from en_US to en_DK
+    LC_NUMERIC = "da_DK.UTF-8";  # Use Danish number formatting
+    LC_TIME = "da_DK.UTF-8";     # Use Danish time format (24-hour)
+    LC_MONETARY = "da_DK.UTF-8"; # Use Danish currency format
+    LC_ADDRESS = "da_DK.UTF-8";  # Use Danish address formatting
+    LC_IDENTIFICATION = "da_DK.UTF-8"; # Use Danish locale metadata
+    LC_MEASUREMENT = "da_DK.UTF-8";    # Use Danish measurement units
+    LC_PAPER = "da_DK.UTF-8";          # Use Danish paper size
+    LC_TELEPHONE = "da_DK.UTF-8";      # Use Danish telephone formatting
+    LC_NAME = "da_DK.UTF-8";           # Use Danish name formatting
     };
   };
 
@@ -168,7 +177,7 @@ in
   services.blueman.enable = true;       # Bluetooth GUI manager
   hardware.bluetooth.powerOnBoot = true; # Turn on Bluetooth at boot
 
-  # ==================== SECURITY & POLKIT ====================
+  # ==================== security & POLKIT ====================
   # Enable Polkit authentication framework (required for KDE and system administration)
   security.polkit.enable = true;
 
@@ -254,98 +263,228 @@ in
     options = "--delete-older-than 7d"; # Delete packages older than 7 days
   };
 
-  # List of packages installed in system profile
   environment.systemPackages = with pkgs; [
-    # -------------------------------
-    # System utilities
-    # -------------------------------
-    bat          # Enhanced 'cat' with syntax highlighting
-    btop         # Advanced interactive resource monitoring
-    bottom       # Alternative resource monitoring for terminal
-    curl         # Transfer data from URLs (HTTP, FTP, etc.)
-    duf          # Disk usage monitoring with nice output
-    fd           # Fast and modern replacement for 'find'
-    file         # Show file type information
-    git          # Version control system for code and files
-    htop         # Interactive system and process monitoring
-    jq           # JSON processor and manipulation tool
-    neofetch     # Show system information and OS banner
-    rsync        # File synchronization between systems
-    tmux         # Terminal multiplexer for sessions and windows
-    unzip        # Extract .zip archives
-    vim          # Powerful text editor
-    wget         # Download files via HTTP/FTP
-    xdg-utils    # Standard desktop utilities (open files, URLs, etc.)
+  # ==========================================================================
+  # SYSTEM & COMMAND LINE UTILITIES
+  # ==========================================================================
 
-    # -------------------------------
-    # Hardware diagnostics
-    # -------------------------------
-    clinfo             # OpenCL info tool for GPU compute information
-    dmidecode          # Retrieve hardware information from BIOS
-    glxinfo            # OpenGL information and GPU support
-    inxi               # Print detailed system information
-    lm_sensors         # Temperature and sensor monitoring
-    nvtopPackages.full # GPU monitor for NVIDIA cards
-    pciutils           # Show information about PCI devices
-    smartmontools      # Disk health and S.M.A.R.T. monitoring
-    vulkan-loader      # Loader for Vulkan API
-    vulkan-tools       # Vulkan tools and demos
+  # --------------------------------------------------------------------------
+  # File Management & Navigation
+  # --------------------------------------------------------------------------
+  broot          # Terminal file browser with tree view and fuzzy search
+  dust           # More intuitive version of du with immediate overview
+  duf            # Disk usage/free utility with better formatting
+  fselect        # Find files with SQL-like queries for advanced searching
+  ncdu           # NCurses disk usage analyzer with interactive interface
+  zoxide         # Smarter cd command that learns your frequently used directories
 
-    # -------------------------------
-    # Desktop / GUI support
-    # -------------------------------
-    kdePackages.dolphin # KDE file manager
-    kdePackages.konsole # KDE terminal emulator
-    libnotify           # Desktop notifications
-    libva-utils         # VA-API tools for video acceleration
-    ntfs3g              # NTFS filesystem support
-    micro               # User-friendly and minimalist text editor
+  # --------------------------------------------------------------------------
+  # Text Processing & Editors
+  # --------------------------------------------------------------------------
+  bat            # Cat clone with syntax highlighting and git integration
+  # bat-extras is a package set, not a single package - install individual components:
+  bat-extras.batdiff  # Diff viewer with syntax highlighting
+  bat-extras.batgrep  # Grep replacement with syntax highlighting
+  bat-extras.batman   # Manual page viewer with syntax highlighting
+  bat-extras.batpipe  # Pipe output to bat for syntax highlighting
+  micro          # Modern terminal text editor with intuitive keybindings
+  neovim         # Vim-fork focused on extensibility and usability
+  ripgrep        # Extremely fast recursive grep alternative
+  ripgrep-all    # Ripgrep that searches in PDFs, Word docs, and other file types
 
-    # -------------------------------
-    # Development / Programming
-    # -------------------------------
-    gcc       # C/C++ compiler
-    nodejs    # JavaScript runtime and development tools
-    python3   # Python interpreter
-    rustup    # Rust toolchain installer
-    fzf       # Fuzzy finder for quick file searching in terminal
+  # --------------------------------------------------------------------------
+  # System Monitoring & Process Management
+  # --------------------------------------------------------------------------
+  btop           # Modern resource monitor with customizable UI
+  bottom         # Cross-platform graphical process/system monitor
+  htop           # Interactive process viewer with tree view and filtering
+  glances        # Cross-platform system monitoring tool with web interface
+  iotop          # I/O usage monitoring to identify disk-intensive processes
+  nethogs        # Bandwidth monitoring per process (grouped by network interface)
+  gitFull
 
-    # -------------------------------
-    # Gaming and optimization
-    # -------------------------------
-    gamemode      # Game optimization tool for Linux
-    gamescope     # Steam Deck-like scaling and compositor
-    lutris        # Game manager for Linux
-    mangohud      # Performance overlay for games
-    protonup-qt   # Manage Proton versions for Steam
-    wine          # Windows compatibility layer for Linux
+  # --------------------------------------------------------------------------
+  # Backup & Synchronization
+  # --------------------------------------------------------------------------
+  borgbackup     # Deduplicating backup program with compression and encryption
+  rsnapshot      # Filesystem snapshot utility based on rsync for backups
+  rsync          # Fast, versatile file copying tool with delta-transfer algorithm
 
-    # -------------------------------
-    # Virtualization and containerization
-    # -------------------------------
-    docker-compose # Docker container management
-    distrobox      # Containerized development environments
-    virt-manager   # GUI for libvirt and VM management
-    appimage-run   # Run AppImage files directly
+  # --------------------------------------------------------------------------
+  # Utilities & Productivity
+  # --------------------------------------------------------------------------
+  curl           # Transfer data from/to servers supporting various protocols
+  curlie         # User-friendly curl wrapper with sane defaults and formatting
+  fzf            # Fuzzy finder for command line with preview capabilities
+  starship       # Fast, customizable shell prompt with extensive theming
+  taskwarrior3   # Command-line task management with filtering and reporting
+  tldr           # Simplified, practical man pages with examples
+  tmux           # Terminal multiplexer for session persistence and window management
+  tmuxp          # Tmux session manager with YAML configuration
+  watch          # Execute program periodically with full-screen output
+  zsh            # Z shell with extensive customization and plugin support
+  zsh-autosuggestions    # Fish-like autosuggestions for Zsh based on history
+  zsh-syntax-highlighting # Syntax highlighting for Zsh command line
 
-    # -------------------------------
-    # Network tools
-    # -------------------------------
-    iperf3 # Network performance measurement
-    nmap   # Network scanning and security tool
+  # --------------------------------------------------------------------------
+  # Miscellaneous Tools
+  # --------------------------------------------------------------------------
+  aircrack-ng    # WiFi security auditing tools (WEP/WPA cracking)
+  cmatrix        # Falling matrix animation in terminal (for fun)
+  file           # Determine file type using magic numbers
+  fortune        # Display random quotes, jokes, or wisdom
+  openssl        # Cryptography and SSL/TLS toolkit for secure communications
 
-    # -------------------------------
-    # NVIDIA-specific tools
-    # -------------------------------
-    linuxPackages.nvidia_x11  # NVIDIA X11 driver for GPU
-    nvidia-vaapi-driver       # NVIDIA VA-API driver for hardware acceleration
+  # ==========================================================================
+  # NETWORKING & Security
+  # ==========================================================================
 
-    # -------------------------------
-    # Package management and Nix extensions
-    # -------------------------------
-    cachix    # Nix binary cache client
-    nix-index # Quickly find packages in NixOS
-  ];
+  # --------------------------------------------------------------------------
+  # Network Diagnostics
+  # --------------------------------------------------------------------------
+  iperf3         # Network bandwidth measurement tool
+  nmap           # Network discovery and security auditing with scripting
+  masscan        # Mass IP port scanner designed for Internet-wide scanning
+  tcpdump        # Command-line packet analyzer with powerful filtering
+  tcpflow        # TCP flow recorder that reconstructs actual data streams
+  traceroute     # Trace network path to host showing response times
+
+  # --------------------------------------------------------------------------
+  # Security & Pentesting
+  # --------------------------------------------------------------------------
+  ettercap       # Comprehensive suite for MITM attacks on LAN
+  openvpn        # Robust VPN solution with SSL/TLS encryption
+  wireguard-tools # Fast, modern VPN implementation with minimal overhead
+
+  # --------------------------------------------------------------------------
+  # Container & Orchestration Tools
+  # --------------------------------------------------------------------------
+  podman         # Daemonless container engine with rootless capabilities
+
+  # ==========================================================================
+  # DEVELOPMENT & DEVOPS
+  # ==========================================================================
+
+  # --------------------------------------------------------------------------
+  # Infrastructure as Code
+  # --------------------------------------------------------------------------
+  ansible        # Automation for configuration management and deployment
+  packer         # Machine image creation for multiple platforms
+  terraform      # Infrastructure provisioning tool with state management
+
+  # --------------------------------------------------------------------------
+  # Containerization
+  # --------------------------------------------------------------------------
+  docker         # Container platform for building and sharing applications
+  docker-compose # Multi-container application management with YAML files
+
+  # --------------------------------------------------------------------------
+  # Programming Languages & Runtimes
+  # --------------------------------------------------------------------------
+  go             # Go programming language for efficient system programming
+  nodejs         # JavaScript runtime built on Chrome's V8 engine
+  perl           # Perl programming language with strong text processing
+  python3        # Python 3 interpreter for scripting and application development
+  python3Packages.pip # Python package installer for PyPI packages
+  pipx           # Install and run Python applications in isolated environments
+  rustup         # Rust toolchain installer and manager with component selection
+
+  # --------------------------------------------------------------------------
+  # Build Tools & Compilers
+  # --------------------------------------------------------------------------
+  cmake          # Cross-platform build system generator
+  gcc            # GNU Compiler Collection for C, C++, and other languages
+
+  # ==========================================================================
+  # GUI APPLICATIONS
+  # ==========================================================================
+
+  # --------------------------------------------------------------------------
+  # Browsers & Communication
+  # --------------------------------------------------------------------------
+  chromium       # Open-source version of Chrome browser
+  firefox        # Firefox web browser with privacy focus
+  signal-desktop # Secure messaging app with end-to-end encryption
+  telegram-desktop # Feature-rich messaging app with channels and bots
+  thunderbird    # Email client with calendar and contacts integration
+
+  # --------------------------------------------------------------------------
+  # Multimedia
+  # --------------------------------------------------------------------------
+  audacity       # Audio editing software with multi-track capabilities
+  handbrake      # Video transcoder with presets and fine-grained controls
+  mpv            # Versatile media player with scripting support
+  spotify        # Music streaming service with extensive catalog
+  vlc            # Media player that supports virtually all formats
+
+  # --------------------------------------------------------------------------
+  # Graphics & Design
+  # --------------------------------------------------------------------------
+  gimp           # GNU Image Manipulation Program for photo retouching
+  inkscape       # Vector graphics editor for SVG creation and editing
+  krita          # Digital painting application with brush engines
+  kdePackages.okular  # Qt 6 version
+  zathura        # Minimalist document viewer with vim-like keybindings
+
+  # --------------------------------------------------------------------------
+  # Utilities & System Tools
+  # --------------------------------------------------------------------------
+  distrobox      # Containerized application environments using Podman/Docker
+  kdePackages.dolphin   # Qt 6 version
+  evince         # Document viewer with search and presentation modes (GNOME)
+  feh            # Lightweight image viewer for quick viewing
+  gparted        # Partition editor for disk management tasks
+  kdePackages.konsole   # Qt 6 version (recommended)
+  obs-studio     # Screen recording and streaming for content creation
+  paprefs        # PulseAudio preferences GUI for advanced audio configuration
+  protonup-qt    # Proton-GE and Wine-GE management for gaming compatibility
+  transmission_3-gtk # BitTorrent client with web interface (GTK version)
+
+  # --------------------------------------------------------------------------
+  # Gaming
+  # --------------------------------------------------------------------------
+  gamescope      # SteamOS compositor and scaling tool for games
+  lutris         # Game management platform with installer scripts
+  wine           # Windows compatibility layer for running Windows applications
+
+  # ==========================================================================
+  # HARDWARE & SYSTEM INFO
+  # ==========================================================================
+
+  # --------------------------------------------------------------------------
+  # GPU & Graphics
+  # --------------------------------------------------------------------------
+  clinfo         # OpenCL platform and device information
+  glxinfo        # OpenGL information utility for driver capabilities
+  vulkan-loader  # Vulkan loader for graphics API support
+  vulkan-tools   # Vulkan utilities including vkcube and vulkaninfo
+  nvidia-vaapi-driver # VA-API implementation using NVDEC for hardware acceleration
+
+  # --------------------------------------------------------------------------
+  # System Information
+  # --------------------------------------------------------------------------
+  dmidecode      # DMI table decoder for hardware information
+  inxi           # Full system information tool with comprehensive reporting
+  pciutils       # PCI bus configuration space access (lspci utility)
+
+  # --------------------------------------------------------------------------
+  # Storage & Disk Health
+  # --------------------------------------------------------------------------
+  smartmontools  # S.M.A.R.T. monitoring tools for disk health
+  ntfs3g         # NTFS read-write driver for Windows filesystems
+
+  # --------------------------------------------------------------------------
+  # Gaming Performance
+  # --------------------------------------------------------------------------
+  gamemode       # Optimize system performance for games by adjusting priorities
+  mangohud       # Vulkan/OpenGL overlay for monitoring FPS, temps, and usage
+
+  # --------------------------------------------------------------------------
+  # Miscellaneous Hardware
+  # --------------------------------------------------------------------------
+  libnotify      # Desktop notifications for application events
+  libva-utils    # Video Acceleration API utilities for hardware decoding
+];
 
   # ==================== ADDITIONAL SYSTEM CONFIGURATION ====================
   # Enable TRIM for SSD drives (improves performance and lifespan)
