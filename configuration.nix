@@ -301,7 +301,7 @@ services.timesyncd = {
   glances        # Cross-platform system monitoring tool with web interface
   iotop          # I/O usage monitoring to identify disk-intensive processes
   nethogs        # Bandwidth monitoring per process (grouped by network interface)
-  gitFull
+  gitFull        # A more feature-complete build of Git, including support for additional protocols and integrations.
 
   # --------------------------------------------------------------------------
   # Backup & Synchronization
