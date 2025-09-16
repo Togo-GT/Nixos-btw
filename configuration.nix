@@ -167,6 +167,14 @@ i18n = {
     # Nyttige tilføjelser
     ntfs3g    # NTFS filsystemsupport
     micro     # Brugervenlig teksteditor
+    fd
+    bat
+    ripgrep
+    eza
+    micro
+    duf
+    bottom
+    fzf
   ];
 
   # Enable TRIM for SSDs
