@@ -131,8 +131,14 @@
 
   # ==================== BRUGERKONFIGURATION ====================
   # Aktiver Zsh shell (kraftigt og konfigurerbart shell)
-  programs.zsh.enable = true;
-
+  programs.zsh = {
+  enable = true;
+  ohMyZsh = {
+    enable = true;
+    plugins = [ "git" "sudo" "systemd" ];
+    theme = "agnoster";
+    };
+  };
   # Definér en brugerkonto
   users.users.togo-gt = {
     isNormalUser = true;       # Definerer som normal bruger (ikke systembruger)
@@ -181,6 +187,9 @@
     curl         # Overfør data via URL'er
     htop         # Interaktiv systemovervågning
     file         # Vis filtypeinformation
+    btop         # Advanced resource monitor
+    nvtopPackages.full         # GPU monitoring
+    smartmontools # Disk health monitoring
 
     # Arkivværktøjer
     unzip        # Udpak .zip-filer
