@@ -35,34 +35,34 @@
   # Set time zone to Copenhagen (Central European Time)
   time.timeZone = "Europe/Copenhagen";
 
-  # Internationalization settings
-  i18n = {
-    # Default system locale (language and character encoding)
-    defaultLocale = "en_US.UTF-8";
+i18n = {
+  # Default system locale (language + character encoding)
+  # This is the locale your system will use by default.
+  defaultLocale = "en_US.UTF-8";
 
-    # Supported locales for the system
-    supportedLocales = [
-      "en_US.UTF-8/UTF-8"  # US English with UTF-8 encoding
-      "da_DK.UTF-8/UTF-8"  # Danish with UTF-8 encoding
-      "C.UTF-8/UTF-8"      # Fallback C locale with UTF-8
-    ];
+  # List of locales that should be generated on the system
+  # Here we only generate English UTF-8
+  supportedLocales = [
+    "en_US.UTF-8/UTF-8"  # English (United States) with UTF-8 encoding
+  ];
 
-    # Additional locale environment variables
-    extraLocaleSettings = {
-      LANG = "en_US.UTF-8";              # Default language
-      LC_CTYPE = "en_US.UTF-8";          # Character classification and case conversion
-      LC_NUMERIC = "da_DK.UTF-8";        # Number formatting (Danish style)
-      LC_TIME = "da_DK.UTF-8";           # Date and time format (Danish style)
-      LC_MONETARY = "da_DK.UTF-8";       # Currency formatting (Danish Kroner)
-      LC_ADDRESS = "da_DK.UTF-8";        # Address formatting (Danish style)
-      LC_IDENTIFICATION = "da_DK.UTF-8"; # Metadata about locale information
-      LC_MEASUREMENT = "da_DK.UTF-8";    # Measurement units (metric system)
-      LC_PAPER = "da_DK.UTF-8";          # Paper size standards (A4)
-      LC_TELEPHONE = "da_DK.UTF-8";      # Telephone number formats
-      LC_NAME = "da_DK.UTF-8";           # Name formatting
-      # Note: LC_ALL is intentionally not set as it would override all other settings
-    };
+  # Additional environment variables for finer locale control
+  # These LC_* variables control specific aspects of formatting:
+  extraLocaleSettings = {
+    LANG = "en_US.UTF-8";        # Default language for all applications
+    LC_CTYPE = "en_US.UTF-8";    # Character classification (letters, case)
+    LC_NUMERIC = "en_US.UTF-8";  # Number formatting (decimal point, thousands separator)
+    LC_TIME = "en_US.UTF-8";     # Date and time format
+    LC_MONETARY = "en_US.UTF-8"; # Currency format
+    LC_ADDRESS = "en_US.UTF-8";  # Address formatting
+    LC_IDENTIFICATION = "en_US.UTF-8"; # Metadata about the locale
+    LC_MEASUREMENT = "en_US.UTF-8";    # Measurement units (metric/imperial)
+    LC_PAPER = "en_US.UTF-8";          # Paper size (A4 or Letter)
+    LC_TELEPHONE = "en_US.UTF-8";      # Telephone number formatting
+    LC_NAME = "en_US.UTF-8";           # Name formatting
+    # Note: LC_ALL is intentionally not set; it would override all the above LC_* settings
   };
+};
 
   # Keyboard configuration for X11 (graphical interface)
   services.xserver.xkb = {
