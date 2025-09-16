@@ -14,12 +14,19 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+
+
+
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Enable useful kernel modules
   boot.initrd.kernelModules = [ "amdgpu" ];  # Fjern hvis du ikke har AMD GPU
-  boot.kernelModules = [ "fuse" "v4l2loopback" ];  # Useful modules
+  boot.kernelModules = [
+  "fuse"
+  "v4l2loopback"
+  "snd-aloop"
+  ];
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -153,7 +160,7 @@ i18n = {
   file         # Viser filtypeinformation
   unzip        # Udpakning af .zip filer
   p7zip        # Udpakning af .7z filer
-
+  pciutils
  # KDE applications
 
   kdePackages.dolphin   # KDE filhåndtering
@@ -161,13 +168,13 @@ i18n = {
 
  # Useful utilities
 
- ripgrep      # Hurtig søgning i filer
+  ripgrep      # Hurtig søgning i filer
   fd           # Moderne og hurtig erstatning for 'find'
   eza          # Forbedret 'ls'-kommando med farver og kolonner
 
  # Additional useful tools
 
- neofetch     # Viser systeminformation i terminalen
+  neofetch     # Viser systeminformation i terminalen
   bottom       # Ressourcemonitor (som htop, men med mere info)
   duf          # Diskbrugsoversigt i terminalen
   bat          # Forbedret 'cat' med syntax highlighting
@@ -175,7 +182,7 @@ i18n = {
 
  # Nyttige tilføjelser
 
- ntfs3g       # NTFS filsystem support
+  ntfs3g       # NTFS filsystem support
   micro        # Brugervenlig teksteditor, nemmere end vim
 ];
 
