@@ -18,8 +18,19 @@
   # Brug den nyeste Linux kernel
   boot.kernelPackages = pkgs.linuxPackages_latest; # Får de nyeste kernedrivere og sikkerhedsopdateringer
 
+  # Kernel parameters for better performance
+  boot.kernelParams = [
+    "mitigations=off" # Disable security mitigations for performance
+    "quiet"           # Reduce boot noise
+    "splash"          # Show splash screen
+  ];
+
+  # Common hardware kernel modules
+  boot.initrd.availableKernelModules = [
+    "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod"
+  ];
+
   # Aktiver nyttige kernel moduler
-  boot.initrd.kernelModules = [ "amdgpu" ];  # AMD GPU-driver til tidlig opstart (fjern hvis du ikke har AMD GPU)
   boot.kernelModules = [
     "fuse"          # Understøttelse for FUSE-filsystemer (bruges af bl.a. SSHFS, NTFS-3G)
     "v4l2loopback"  # Virtual video device - god til skærmoptagelse og virtual cameras
@@ -44,6 +55,7 @@
     # Liste over sprog der skal understøttes på systemet
     supportedLocales = [
       "en_US.UTF-8/UTF-8"  # Engelsk (USA) med UTF-8 tegnkodning
+      "da_DK.UTF-8/UTF-8"  # Dansk tilføjet
     ];
 
     # Ekstra miljøvariabler for finjustering af lokalitetsindstillinger
@@ -80,6 +92,18 @@
   services.desktopManager.plasma6.enable = true;   # KDE Plasma 6 som desktop-miljø
 
   # ==================== HARDWARE-STØTTE ====================
+  # Enable hardware acceleration (updated for NixOS 25.05)
+  hardware.graphics = {
+  enable = true;
+  extraPackages = with pkgs; [
+    vaapiVdpau
+    libvdpau-va-gl
+  ];
+  extraPackages32 = with pkgs.pkgsi686Linux; [
+    libva
+  ];
+};
+
   # Aktiver CUPS til udskrivning
   services.printing.enable = true;
 
@@ -91,6 +115,18 @@
     alsa.support32Bit = true;   # Understøttelse af 32-bit applikationer
     pulse.enable = true;        # PulseAudio-kompatibilitet
     # jack.enable = true;       # Aktiver for JACK-applikationer (lydproduktion)
+  };
+
+  # Bluetooth-konfiguration
+  hardware.bluetooth.enable = true;     # Aktiver Bluetooth
+  services.blueman.enable = true;       # Bluetooth GUI-manager
+  hardware.bluetooth.powerOnBoot = true; # Tænd Bluetooth ved opstart
+
+  # Bluetooth lydunderstøttelse
+  hardware.bluetooth.settings = {
+    General = {
+      Enable = "Source,Sink,Media,Socket"; # Aktiver alle Bluetooth-funktioner
+    };
   };
 
   # ==================== BRUGERKONFIGURATION ====================
@@ -105,6 +141,8 @@
       "networkmanager"         # Tillader netværkskonfiguration
       "wheel"                  # Tillader sudo-adgang (administrative rettigheder)
       "input"                  # Tillader adgang til input-enheder (mus/tastatur)
+      "docker"                 # Tillader Docker-adgang
+      "libvirtd"               # Tillader virtualisering
     ];
     shell = pkgs.zsh;          # Sætter Zsh som standard shell
     packages = with pkgs; [
@@ -150,6 +188,7 @@
 
     # Hardware diagnosticering
     pciutils     # Viser PCI-enhedsinformation
+    inxi         # System information tool
 
     # KDE-applikationer
     kdePackages.dolphin   # Filhåndtering
@@ -172,6 +211,25 @@
     # Filsystemstøtte
     ntfs3g       # NTFS filsystem-understøttelse
     micro        # Brugervenlig teksteditor
+
+    # Udviklingsværktøjer
+    nodejs       # JavaScript runtime
+    python3      # Python interpreter
+    gcc          # C/C++ compiler
+    rustup       # Rust toolchain installer
+
+    # Gaming værktøjer
+    gamemode     # Game optimization tool
+    mangohud     # Performance overlay
+    wine         # Windows compatibility layer
+    lutris       # Game manager
+
+    # Virtualisering
+    docker-compose # Docker container management
+
+    # Netværksværktøjer
+    nmap         # Network exploration tool
+    iperf3       # Network performance measurement
   ];
 
   # ==================== YDERLIGERE SYSTEMKONFIGURATION ====================
@@ -181,19 +239,7 @@
   # Aktiver early OOM daemon (håndterer hukommelsesmangel tidligt)
   services.earlyoom.enable = true;
 
-  # Bluetooth-konfiguration
-  hardware.bluetooth.enable = true;     # Aktiver Bluetooth
-  services.blueman.enable = true;       # Bluetooth GUI-manager
-  hardware.bluetooth.powerOnBoot = true; # Tænd Bluetooth ved opstart
-
-  # Bluetooth lydunderstøttelse
-  hardware.bluetooth.settings = {
-    General = {
-      Enable = "Source,Sink,Media,Socket"; # Aktiver alle Bluetooth-funktioner
-    };
-  };
-
-  # Flatpak-understøttelse (til installation af apps fra Flathub)
+  # Flatpak-understøttelse (til installation af apps från Flathub)
   services.flatpak.enable = true;
 
   # Strømstyring (især nyttigt til bærbare)
@@ -207,6 +253,31 @@
     dedicatedServer.openFirewall = true; # Åbn firewall for dedicated servers
   };
 
+  # Virtualization support
+  virtualisation = {
+    docker.enable = true;
+    libvirtd.enable = true;
+  };
+
+  # Better font rendering
+  fonts = {
+  enableDefaultPackages = true;
+  packages = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-emoji
+    nerd-fonts.fira-code
+    nerd-fonts.jetbrains-mono
+  ];
+  fontconfig = {
+    defaultFonts = {
+      monospace = [ "JetBrains Mono Nerd Font" ];
+      sansSerif = [ "Noto Sans" ];
+      serif = [ "Noto Serif" ];
+    };
+  };
+};
+
   # ==================== SIKKERHEDSKONFIGURATION ====================
   # Aktiver OpenSSH daemon (fjernadgang via SSH)
   services.openssh.enable = true;
@@ -216,6 +287,12 @@
     enable = true;  # Aktiver firewall
     allowedTCPPorts = [ 22 80 443 ];  # Tillad SSH (22), HTTP (80), HTTPS (443)
     allowedUDPPorts = [ ];             # Ingen UDP-porte tilladt som standard
+  };
+
+  # Additional security measures
+  security = {
+    sudo.wheelNeedsPassword = true; # Require password for sudo
+    protectKernelImage = true; # Protect kernel from modification
   };
 
   # Denne værdi bestemmer NixOS-udgivelsen som standardindstillingerne er taget fra

@@ -1,4 +1,6 @@
 # Nixos-btw
 Lenova i7
 
-ddd
+sudo nixos-rebuild switch --show-trace 2>&1 | tee build_log.txt
+
+
