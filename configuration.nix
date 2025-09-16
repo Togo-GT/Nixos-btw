@@ -104,14 +104,13 @@ in
 
   # ==================== HARDWARE-STØTTE ====================
   # Modern hardware acceleration
-  hardware.opengl = {
-    enable = true;
-    driSupport32Bit = true;
-
-    extraPackages = with pkgs; [
+  hardware.graphics = {
+  enable = true;
+  enable32Bit = true;  # Renamed from driSupport32Bit
+     extraPackages = with pkgs; [
       vaapiVdpau
       libvdpau-va-gl
-      mesa.drivers
+      mesa
     ] ++ lib.optionals (gpuType == "intel") [
       intel-media-driver
       vaapiIntel
@@ -124,7 +123,7 @@ in
 
     extraPackages32 = with pkgs.pkgsi686Linux; [
       libva
-      mesa.drivers
+      mesa
     ] ++ lib.optionals (gpuType == "amd") [
       amdvlk
     ] ++ lib.optionals (gpuType == "nvidia") [
@@ -376,7 +375,7 @@ in
   services = {
     avahi = { # Network service discovery
       enable = true;
-      nssmdns = true;
+      nssmdns4 = true;
     };
     fwupd.enable = true; # Firmware updates
     thermald.enable = true; # Thermal management
