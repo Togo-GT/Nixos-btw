@@ -2,8 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running 'nixos-help').
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  # Define GPU type here (change to "amd" or "nvidia" depending on your GPU)
+  gpuType = "intel";
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -86,26 +90,45 @@
   console.keyMap = "dk-latin1";  # Dansk tastaturlayout med Latin-1 tegnkodning
 
   # ==================== GRAFISK MILJØ ====================
-  # Aktiver X11 vinduesystemet (nødvendigt for de fleste desktop-miljøer)
+  # Aktiver X11 vinduessystemet (nødvendigt for de fleste desktop-miljøer)
   services.xserver.enable = true;
-   xdg.mime.enable = true;
-
+  xdg.mime.enable = true;
 
   # Aktiver KDE Plasma Desktop Environment
-  services.displayManager.sddm.enable = true;      # SDDM som login-manager
-  services.desktopManager.plasma6.enable = true;   # KDE Plasma 6 som desktop-miljø
+  services.displayManager.sddm = {
+    enable = true;
+    wayland.enable = true; # Wayland support
+  };
+
+  services.desktopManager.plasma6.enable = true;
 
   # ==================== HARDWARE-STØTTE ====================
-  # Enable hardware acceleration (updated for NixOS 25.05)
-  # Keeping your original graphics configuration as requested
-  hardware.graphics = {
+  # Modern hardware acceleration
+  hardware.opengl = {
     enable = true;
+    driSupport32Bit = true;
+
     extraPackages = with pkgs; [
       vaapiVdpau
       libvdpau-va-gl
+      mesa.drivers
+    ] ++ lib.optionals (gpuType == "intel") [
+      intel-media-driver
+      vaapiIntel
+    ] ++ lib.optionals (gpuType == "amd") [
+      amdvlk
+      rocm-opencl-runtime
+    ] ++ lib.optionals (gpuType == "nvidia") [
+      nvidia-vaapi-driver
     ];
+
     extraPackages32 = with pkgs.pkgsi686Linux; [
       libva
+      mesa.drivers
+    ] ++ lib.optionals (gpuType == "amd") [
+      amdvlk
+    ] ++ lib.optionals (gpuType == "nvidia") [
+      nvidia-vaapi-driver
     ];
   };
 
@@ -126,6 +149,16 @@
   hardware.bluetooth.enable = true;     # Aktiver Bluetooth
   services.blueman.enable = true;       # Bluetooth GUI-manager
   hardware.bluetooth.powerOnBoot = true; # Tænd Bluetooth ved opstart
+
+  # ==================== SECURITY & POLKIT ====================
+  # Polkit authentication (nødvendigt for KDE og system administration)
+  security.polkit.enable = true;
+
+  # Pam configuration for better security
+  security.pam.services = {
+    login.enableKwallet = true;
+    swaylock = {}; # Tilføj hvis du bruger swaylock
+  };
 
   # ==================== BRUGERKONFIGURATION ====================
   # Aktiver Zsh shell (kraftigt og konfigurerbart shell)
@@ -165,6 +198,19 @@
   # Installer Firefox webbrowser
   programs.firefox.enable = true;
 
+  # ==================== XDG DESKTOP PORTAL ====================
+  # XDG Desktop Portal integration (nødvendigt for Wayland og app integration)
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      kdePackages.xdg-desktop-portal-kde  # Qt6-version (anbefalet)
+      xdg-desktop-portal-gtk
+    ];
+  };
+
+  # Dconf support (nødvendigt for GNOME/GTK apps i KDE)
+  programs.dconf.enable = true;
+
   # ==================== NIX-PAKKEKONFIGURATION ====================
   # Tillad ikke-frie (proprietære) pakker
   nixpkgs.config.allowUnfree = true;
@@ -202,6 +248,11 @@
     btop         # Advanced resource monitor
     nvtopPackages.full         # GPU monitoring
     smartmontools # Disk health monitoring
+    glxinfo           # OpenGL info tool
+    clinfo            # OpenCL info tool
+    vulkan-loader     # Vulkan loader
+    libnotify         # Desktop notifications
+    xdg-utils         # XDG utilities
 
     # System diagnosticering
     lm_sensors # Temperatur monitoring
@@ -239,7 +290,7 @@
     duf          # Diskbrugsoversigt
 
     # Tekstbehandling
-    bat          # Forbedret 'cat' med syntaksfremhævning
+    bat          # Forbedrent 'cat' med syntaksfremhævning
     fzf          # Fuzzy finder til terminalen
 
     # Filsystemstøtte
@@ -286,10 +337,9 @@
   services.flatpak.enable = true;
 
   # Strømstyring (især nyttigt til bærbare)
-
-  services.auto-cpufreq.enable = true;         # Bedre power management or
-  services.power-profiles-daemon.enable = false; # true hvis nødvendigt
-  services.tlp.enable = false;             # Bedre batterilevetid true hvis nødvendigt
+  services.power-profiles-daemon.enable = true; # Anbefalet til KDE
+  services.auto-cpufreq.enable = false;
+  services.tlp.enable = false;
 
   # Steam gaming support
   programs.steam = {
@@ -332,38 +382,40 @@
     thermald.enable = true; # Thermal management
   };
 
-  # Better font rendering
-  fonts = {
-    enableDefaultPackages = true;
-    packages = with pkgs; [
-      noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-emoji
-      nerd-fonts.fira-code
-      nerd-fonts.jetbrains-mono
-    ];
-    fontconfig = {
-      defaultFonts = {
-        monospace = [ "JetBrains Mono Nerd Font" ];
-        sansSerif = [ "Noto Sans" ];
-        serif = [ "Noto Serif" ];
-      };
+# Better font rendering
+fonts = {
+  enableDefaultPackages = true;
+
+  packages = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-emoji
+    nerd-fonts.fira-code
+    nerd-fonts.jetbrains-mono
+  ];
+
+  fontconfig = {
+    defaultFonts = {
+      monospace = [ "JetBrainsMono Nerd Font" "Noto Sans Mono" ];
+      sansSerif = [ "Noto Sans" ];
+      serif = [ "Noto Serif" ];
     };
   };
+};
 
   # ==================== SIKKERHEDSKONFIGURATION ====================
   # Aktiver OpenSSH daemon (fjernadgang via SSH)
   services.openssh.enable = true;
 
   # Firewall-konfiguration
- networking.firewall = {
-   allowedTCPPorts = [
-     22 80 443
-     27036 27037 # Steam
+  networking.firewall = {
+    allowedTCPPorts = [
+      22 80 443
+      27036 27037 # Steam
     ];
-   allowedUDPPorts = [
-     27031 27036 # Steam
-     3659 # Lunar Client
+    allowedUDPPorts = [
+      27031 27036 # Steam
+      3659 # Lunar Client
     ];
   };
 
