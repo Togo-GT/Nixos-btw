@@ -7,251 +7,217 @@
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
+      ./hardware-configuration.nix  # Importerer hardware-specifik konfiguration genereret af systemet
     ];
 
-  # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # ==================== BOOTLOADER KONFIGURATION ====================
+  # Bootloader konfiguration for UEFI-systemer
+  boot.loader.systemd-boot.enable = true;      # Bruger systemd-boot som bootloader (modern og simpel)
+  boot.loader.efi.canTouchEfiVariables = true; # Tillader at opdatere EFI-bootvariabler (nødvendigt for UEFI)
 
-  # Use latest kernel.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # Brug den nyeste Linux kernel
+  boot.kernelPackages = pkgs.linuxPackages_latest; # Får de nyeste kernedrivere og sikkerhedsopdateringer
 
-  # Enable useful kernel modules
-  boot.initrd.kernelModules = [ "amdgpu" ];  # Fjern hvis du ikke har AMD GPU
+  # Aktiver nyttige kernel moduler
+  boot.initrd.kernelModules = [ "amdgpu" ];  # AMD GPU-driver til tidlig opstart (fjern hvis du ikke har AMD GPU)
   boot.kernelModules = [
-  "fuse"
-  "v4l2loopback"
-  "snd-aloop"
+    "fuse"          # Understøttelse for FUSE-filsystemer (bruges af bl.a. SSHFS, NTFS-3G)
+    "v4l2loopback"  # Virtual video device - god til skærmoptagelse og virtual cameras
+    "snd-aloop"     # Virtual lyd-enhed - god til lydoptagelse og routing
   ];
 
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  # ==================== NETVÆRKSKONFIGURATION ====================
+  networking.hostName = "nixos"; # Definerer dit systemets navn på netværket
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable networking
+  # Aktivér NetworkManager (anbefalet til både kablet og trådløst netværk)
   networking.networkmanager.enable = true;
 
-
-  # Set time zone to Copenhagen (Central European Time)
+  # ==================== INTERNATIONALISERING ====================
+  # Sæt tidszone til København (Central European Time)
   time.timeZone = "Europe/Copenhagen";
 
-i18n = {
-  # Default system locale (language + character encoding)
-  # This is the locale your system will use by default.
-  defaultLocale = "en_US.UTF-8";
+  # Sprog- og lokalitetsindstillinger
+  i18n = {
+    # Standardsprog for systemet (engelsk med UTF-8 tegnsæt)
+    defaultLocale = "en_US.UTF-8";
 
-  # List of locales that should be generated on the system
-  # Here we only generate English UTF-8
-  supportedLocales = [
-    "en_US.UTF-8/UTF-8"  # English (United States) with UTF-8 encoding
-  ];
-
-  # Additional environment variables for finer locale control
-  # These LC_* variables control specific aspects of formatting:
-  extraLocaleSettings = {
-    LANG = "en_US.UTF-8";        # Default language for all applications
-    LC_CTYPE = "en_US.UTF-8";    # Character classification (letters, case)
-    LC_NUMERIC = "en_US.UTF-8";  # Number formatting (decimal point, thousands separator)
-    LC_TIME = "en_US.UTF-8";     # Date and time format
-    LC_MONETARY = "en_US.UTF-8"; # Currency format
-    LC_ADDRESS = "en_US.UTF-8";  # Address formatting
-    LC_IDENTIFICATION = "en_US.UTF-8"; # Metadata about the locale
-    LC_MEASUREMENT = "en_US.UTF-8";    # Measurement units (metric/imperial)
-    LC_PAPER = "en_US.UTF-8";          # Paper size (A4 or Letter)
-    LC_TELEPHONE = "en_US.UTF-8";      # Telephone number formatting
-    LC_NAME = "en_US.UTF-8";           # Name formatting
-    # Note: LC_ALL is intentionally not set; it would override all the above LC_* settings
-  };
-};
-
-  # Keyboard configuration for X11 (graphical interface)
-  services.xserver.xkb = {
-    layout = "dk";    # Danish keyboard layout
-    variant = "";     # No special variant
-  };
-
-  # Keyboard configuration for virtual console (TTY)
-  console.keyMap = "dk-latin1";  # Danish keyboard layout with Latin-1 encoding
-
-  # Enable the X11 windowing system.
-  # You can disable this if you're only using the Wayland session.
-  services.xserver.enable = true;
-
-  # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
-
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable sound with pipewire.
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # Enable Zsh shell
-  programs.zsh.enable = true;
-
-  # Define a user account. Don't forget to set a password with 'passwd'.
-  users.users.togo-gt = {
-    isNormalUser = true;
-    description = "Togo-GT";
-    extraGroups = [ "networkmanager" "wheel" "input" ];
-    shell = pkgs.zsh;
-    packages = with pkgs; [
-      kdePackages.kate
-    #  thunderbird
+    # Liste over sprog der skal understøttes på systemet
+    supportedLocales = [
+      "en_US.UTF-8/UTF-8"  # Engelsk (USA) med UTF-8 tegnkodning
     ];
-  };
 
-  # Enable automatic login for the user.
-  # Sikkerhedsforbedring: deaktiveret automatisk login
-  services.displayManager.autoLogin.enable = false;
-  # services.displayManager.autoLogin.user = "togo-gt";
-
-  # Install firefox.
-  programs.firefox.enable = true;
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-
-  # Enable flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # Automatic garbage collection
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-
- environment.systemPackages = with pkgs; [
-
-  git          # Versionskontrolsystem
-  vim          # Teksteditor
-  wget         # Kommando-linje værktøj til at hente filer via HTTP/FTP
-  curl         # Kommando-linje værktøj til at hente/fremføre data over URL'er
-  htop         # Interaktiv systemmonitor
-  file         # Viser filtypeinformation
-  unzip        # Udpakning af .zip filer
-  p7zip        # Udpakning af .7z filer
-  pciutils
- # KDE applications
-
-  kdePackages.dolphin   # KDE filhåndtering
-  kdePackages.konsole   # KDE terminal
-
- # Useful utilities
-
-  ripgrep      # Hurtig søgning i filer
-  fd           # Moderne og hurtig erstatning for 'find'
-  eza          # Forbedret 'ls'-kommando med farver og kolonner
-
- # Additional useful tools
-
-  neofetch     # Viser systeminformation i terminalen
-  bottom       # Ressourcemonitor (som htop, men med mere info)
-  duf          # Diskbrugsoversigt i terminalen
-  bat          # Forbedret 'cat' med syntax highlighting
-  fzf          # Fuzzy finder til terminal
-
- # Nyttige tilføjelser
-
-  ntfs3g       # NTFS filsystem support
-  micro        # Brugervenlig teksteditor, nemmere end vim
-];
-
-
-  # Enable TRIM for SSDs
-  services.fstrim.enable = true;
-
-  # Enable early OOM daemon to handle low memory situations
-  services.earlyoom.enable = true;
-
-  # Enable Bluetooth
-  hardware.bluetooth.enable = true;
-  services.blueman.enable = true;
-
-  # Bluetooth power management
-  hardware.bluetooth.powerOnBoot = true;  # Tilføjet Bluetooth power management
-
-  # Bluetooth audio support
-  hardware.bluetooth.settings = {
-    General = {
-      Enable = "Source,Sink,Media,Socket";
+    # Ekstra miljøvariabler for finjustering af lokalitetsindstillinger
+    extraLocaleSettings = {
+      LANG = "en_US.UTF-8";        # Standardsprog for alle applikationer
+      LC_CTYPE = "en_US.UTF-8";    # Tegnklassifikation (bogstaver, cases)
+      LC_NUMERIC = "en_US.UTF-8";  # Talformatering (decimalseparator, tusindseparator)
+      LC_TIME = "en_US.UTF-8";     # Dato- og tidsformat
+      LC_MONETARY = "en_US.UTF-8"; # Valutaformat
+      LC_ADDRESS = "en_US.UTF-8";  # Adresseformatering
+      LC_IDENTIFICATION = "en_US.UTF-8"; # Metadata om lokaliteten
+      LC_MEASUREMENT = "en_US.UTF-8";    # Måleenheder (metrisk/imperial)
+      LC_PAPER = "en_US.UTF-8";          # Papirstørrelse (A4 eller Letter)
+      LC_TELEPHONE = "en_US.UTF-8";      # Telefonnummerformatering
+      LC_NAME = "en_US.UTF-8";           # Navneformatering
     };
   };
 
-  # Enable Flatpak support
-  services.flatpak.enable = true;
-
-
-  # Configure power management (uncomment if on laptop)
-  services.power-profiles-daemon.enable = true;
-  # services.tlp.enable = true;  # For better battery life
-
-  # Enable Steam gaming support (uncomment if wanted)
-  programs.steam = {
-     enable = true;
-     remotePlay.openFirewall = true;
-     dedicatedServer.openFirewall = true;
+  # Tastaturkonfiguration til X11 (grafisk interface)
+  services.xserver.xkb = {
+    layout = "dk";    # Dansk tastaturlayout
+    variant = "";     # Ingen speciel variant
   };
 
+  # Tastaturkonfiguration til virtuel konsol (TTY)
+  console.keyMap = "dk-latin1";  # Dansk tastaturlayout med Latin-1 tegnkodning
 
+  # ==================== GRAFISK MILJØ ====================
+  # Aktiver X11 vinduesystemet (nødvendigt for de fleste desktop-miljøer)
+  services.xserver.enable = true;
 
+  # Aktiver KDE Plasma Desktop Environment
+  services.displayManager.sddm.enable = true;      # SDDM som login-manager
+  services.desktopManager.plasma6.enable = true;   # KDE Plasma 6 som desktop-miljø
 
+  # ==================== HARDWARE-STØTTE ====================
+  # Aktiver CUPS til udskrivning
+  services.printing.enable = true;
 
-  # For AMD:
-  # hardware.opengl.extraPackages = with pkgs; [
-  #   amdvlk
-  # ];
+  # Aktiver lyd med PipeWire (modern erstatning for PulseAudio)
+  security.rtkit.enable = true;  # Realtime kit til prioritet af lydprocesser
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;         # ALSA-understøttelse (Advanced Linux Sound Architecture)
+    alsa.support32Bit = true;   # Understøttelse af 32-bit applikationer
+    pulse.enable = true;        # PulseAudio-kompatibilitet
+    # jack.enable = true;       # Aktiver for JACK-applikationer (lydproduktion)
+  };
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
+  # ==================== BRUGERKONFIGURATION ====================
+  # Aktiver Zsh shell (kraftigt og konfigurerbart shell)
+  programs.zsh.enable = true;
 
-  # List services that you want to enable:
+  # Definér en brugerkonto
+  users.users.togo-gt = {
+    isNormalUser = true;       # Definerer som normal bruger (ikke systembruger)
+    description = "Togo-GT";   # Beskrivelse af brugeren
+    extraGroups = [
+      "networkmanager"         # Tillader netværkskonfiguration
+      "wheel"                  # Tillader sudo-adgang (administrative rettigheder)
+      "input"                  # Tillader adgang til input-enheder (mus/tastatur)
+    ];
+    shell = pkgs.zsh;          # Sætter Zsh som standard shell
+    packages = with pkgs; [
+      kdePackages.kate         # Kraftig teksteditor fra KDE
+      # thunderbird           # Email-klient (fjern kommentar for at aktivere)
+    ];
+  };
 
-  # Enable the OpenSSH daemon.
+  # Sikkerhedsforbedring: Deaktiveret automatisk login
+  services.displayManager.autoLogin.enable = false;
+  # services.displayManager.autoLogin.user = "togo-gt";
+
+  # Installer Firefox webbrowser
+  programs.firefox.enable = true;
+
+  # ==================== NIX-PAKKEKONFIGURATION ====================
+  # Tillad ikke-frie (proprietære) pakker
+  nixpkgs.config.allowUnfree = true;
+
+  # Aktiver flakes og nix-command (moderne Nix-funktioner)
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Automatisk oprydning af gamle pakker
+  nix.gc = {
+    automatic = true;           # Kør automatisk
+    dates = "weekly";           # Kør en gang om ugen
+    options = "--delete-older-than 7d"; # Slet pakker ældre end 7 dage
+  };
+
+  # Liste over pakker installeret i systemprofilen
+  environment.systemPackages = with pkgs; [
+    # Versionskontrol og systemværktøjer
+    git          # Versionskontrolsystem
+    vim          # Teksteditor
+    wget         # Hent filer via HTTP/FTP
+    curl         # Overfør data via URL'er
+    htop         # Interaktiv systemovervågning
+    file         # Vis filtypeinformation
+
+    # Arkivværktøjer
+    unzip        # Udpak .zip-filer
+    p7zip        # Udpak .7z-filer
+
+    # Hardware diagnosticering
+    pciutils     # Viser PCI-enhedsinformation
+
+    # KDE-applikationer
+    kdePackages.dolphin   # Filhåndtering
+    kdePackages.konsole   # Terminalemulator
+
+    # Terminalværktøjer
+    ripgrep      # Hurtig filsøgning
+    fd           # Modern erstatning for 'find'
+    eza          # Forbedret 'ls' med farver og metadata
+
+    # Systemovervågning
+    neofetch     # Vis systeminformation
+    bottom       # Ressourceovervågning
+    duf          # Diskbrugsoversigt
+
+    # Tekstbehandling
+    bat          # Forbedret 'cat' med syntaksfremhævning
+    fzf          # Fuzzy finder til terminalen
+
+    # Filsystemstøtte
+    ntfs3g       # NTFS filsystem-understøttelse
+    micro        # Brugervenlig teksteditor
+  ];
+
+  # ==================== YDERLIGERE SYSTEMKONFIGURATION ====================
+  # Aktiver TRIM for SSD-drev (forbedrer ydelse og levetid)
+  services.fstrim.enable = true;
+
+  # Aktiver early OOM daemon (håndterer hukommelsesmangel tidligt)
+  services.earlyoom.enable = true;
+
+  # Bluetooth-konfiguration
+  hardware.bluetooth.enable = true;     # Aktiver Bluetooth
+  services.blueman.enable = true;       # Bluetooth GUI-manager
+  hardware.bluetooth.powerOnBoot = true; # Tænd Bluetooth ved opstart
+
+  # Bluetooth lydunderstøttelse
+  hardware.bluetooth.settings = {
+    General = {
+      Enable = "Source,Sink,Media,Socket"; # Aktiver alle Bluetooth-funktioner
+    };
+  };
+
+  # Flatpak-understøttelse (til installation af apps fra Flathub)
+  services.flatpak.enable = true;
+
+  # Strømstyring (især nyttigt til bærbare)
+  services.power-profiles-daemon.enable = true;
+  # services.tlp.enable = true;  # Bedre batterilevetid (aktivér hvis nødvendigt)
+
+  # Steam gaming support
+  programs.steam = {
+    enable = true;                      # Aktiver Steam
+    remotePlay.openFirewall = true;     # Åbn firewall for Remote Play
+    dedicatedServer.openFirewall = true; # Åbn firewall for dedicated servers
+  };
+
+  # ==================== SIKKERHEDSKONFIGURATION ====================
+  # Aktiver OpenSSH daemon (fjernadgang via SSH)
   services.openssh.enable = true;
 
-  # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 22 80 443 ];
-  networking.firewall.allowedUDPPorts = [  ];
-  # Or disable the firewall altogether.
-  networking.firewall.enable = true;
+  # Firewall-konfiguration
+  networking.firewall = {
+    enable = true;  # Aktiver firewall
+    allowedTCPPorts = [ 22 80 443 ];  # Tillad SSH (22), HTTP (80), HTTPS (443)
+    allowedUDPPorts = [ ];             # Ingen UDP-porte tilladt som standard
+  };
 
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It's perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
+  # Denne værdi bestemmer NixOS-udgivelsen som standardindstillingerne er taget fra
+  system.stateVersion = "25.05"; # Behold denne værdi som den er
 }
