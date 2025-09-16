@@ -20,9 +20,11 @@
 
   # Kernel parameters for better performance
   boot.kernelParams = [
-    "mitigations=off" # Disable security mitigations for performance
     "quiet"           # Reduce boot noise
     "splash"          # Show splash screen
+    "nowatchdog"      # Disable hardware watchdog
+    "tsc=reliable"    # Reliable Time Stamp Counter
+    "nohibernate"     # Disable hibernation
   ];
 
   # Common hardware kernel modules
@@ -86,6 +88,8 @@
   # ==================== GRAFISK MILJØ ====================
   # Aktiver X11 vinduesystemet (nødvendigt for de fleste desktop-miljøer)
   services.xserver.enable = true;
+   xdg.mime.enable = true;
+
 
   # Aktiver KDE Plasma Desktop Environment
   services.displayManager.sddm.enable = true;      # SDDM som login-manager
@@ -93,16 +97,17 @@
 
   # ==================== HARDWARE-STØTTE ====================
   # Enable hardware acceleration (updated for NixOS 25.05)
+  # Keeping your original graphics configuration as requested
   hardware.graphics = {
-  enable = true;
-  extraPackages = with pkgs; [
-    vaapiVdpau
-    libvdpau-va-gl
-  ];
-  extraPackages32 = with pkgs.pkgsi686Linux; [
-    libva
-  ];
-};
+    enable = true;
+    extraPackages = with pkgs; [
+      vaapiVdpau
+      libvdpau-va-gl
+    ];
+    extraPackages32 = with pkgs.pkgsi686Linux; [
+      libva
+    ];
+  };
 
   # Aktiver CUPS til udskrivning
   services.printing.enable = true;
@@ -114,7 +119,7 @@
     alsa.enable = true;         # ALSA-understøttelse (Advanced Linux Sound Architecture)
     alsa.support32Bit = true;   # Understøttelse af 32-bit applikationer
     pulse.enable = true;        # PulseAudio-kompatibilitet
-    # jack.enable = true;       # Aktiver for JACK-applikationer (lydproduktion)
+    jack.enable = true;         # Aktiver for JACK-applikationer (lydproduktion)
   };
 
   # Bluetooth-konfiguration
@@ -122,23 +127,19 @@
   services.blueman.enable = true;       # Bluetooth GUI-manager
   hardware.bluetooth.powerOnBoot = true; # Tænd Bluetooth ved opstart
 
-  # Bluetooth lydunderstøttelse
-  hardware.bluetooth.settings = {
-    General = {
-      Enable = "Source,Sink,Media,Socket"; # Aktiver alle Bluetooth-funktioner
-    };
-  };
-
   # ==================== BRUGERKONFIGURATION ====================
   # Aktiver Zsh shell (kraftigt og konfigurerbart shell)
   programs.zsh = {
-  enable = true;
-  ohMyZsh = {
     enable = true;
-    plugins = [ "git" "sudo" "systemd" ];
-    theme = "agnoster";
+    ohMyZsh = {
+      enable = true;
+      plugins = [ "git" "sudo" "systemd" "docker" "kubectl" ];
+      theme = "agnoster";
     };
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
   };
+
   # Definér en brugerkonto
   users.users.togo-gt = {
     isNormalUser = true;       # Definerer som normal bruger (ikke systembruger)
@@ -168,8 +169,19 @@
   # Tillad ikke-frie (proprietære) pakker
   nixpkgs.config.allowUnfree = true;
 
-  # Aktiver flakes og nix-command (moderne Nix-funktioner)
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  # Nix optimization settings - consolidated into a single definition
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    auto-optimise-store = true;
+    substituters = [
+      "https://cache.nixos.org"
+      "https://nix-community.cachix.org"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+    ];
+  };
 
   # Automatisk oprydning af gamle pakker
   nix.gc = {
@@ -190,6 +202,19 @@
     btop         # Advanced resource monitor
     nvtopPackages.full         # GPU monitoring
     smartmontools # Disk health monitoring
+
+    # System diagnosticering
+    lm_sensors # Temperatur monitoring
+    dmidecode # Hardware info
+    usbutils # USB enheder
+
+    # Nyttige værktøjer
+    rsync # Fil synkronisering
+    tmux # Terminal multiplexer
+    jq # JSON processor
+    libva-utils # VA-API værktøjer
+    vulkan-tools # Vulkan værktøjer
+    mesa-demos # Mesa demos
 
     # Arkivværktøjer
     unzip        # Udpak .zip-filer
@@ -232,13 +257,22 @@
     mangohud     # Performance overlay
     wine         # Windows compatibility layer
     lutris       # Game manager
+    gamescope    # Steam Deck-like scaling
+    protonup-qt  # Proton version manager
 
     # Virtualisering
     docker-compose # Docker container management
+    virt-manager   # GUI for libvirt
 
     # Netværksværktøjer
     nmap         # Network exploration tool
     iperf3       # Network performance measurement
+
+    # Additional useful packages
+    distrobox    # Containerized development environments
+    appimage-run # Run AppImage files
+    nix-index    # Quickly find packages
+    cachix       # Nix binary cache client
   ];
 
   # ==================== YDERLIGERE SYSTEMKONFIGURATION ====================
@@ -252,8 +286,10 @@
   services.flatpak.enable = true;
 
   # Strømstyring (især nyttigt til bærbare)
-  services.power-profiles-daemon.enable = true;
-  # services.tlp.enable = true;  # Bedre batterilevetid (aktivér hvis nødvendigt)
+
+  services.auto-cpufreq.enable = true;         # Bedre power management or
+  services.power-profiles-daemon.enable = false; # true hvis nødvendigt
+  services.tlp.enable = false;             # Bedre batterilevetid true hvis nødvendigt
 
   # Steam gaming support
   programs.steam = {
@@ -262,46 +298,83 @@
     dedicatedServer.openFirewall = true; # Åbn firewall for dedicated servers
   };
 
+  # Gaming optimering
+  programs.gamemode.enable = true;
+
+  # Hardware monitoring
+  services.hardware.bolt.enable = true; # Thunderbolt
+
   # Virtualization support
   virtualisation = {
-    docker.enable = true;
-    libvirtd.enable = true;
+    docker = {
+      enable = true;
+      rootless = {
+        enable = true;
+        setSocketVariable = true;
+      };
+    };
+    libvirtd = {
+      enable = true;
+      qemu = {
+        runAsRoot = true;
+        swtpm.enable = true;
+      };
+    };
+  };
+
+  # Additional services
+  services = {
+    avahi = { # Network service discovery
+      enable = true;
+      nssmdns = true;
+    };
+    fwupd.enable = true; # Firmware updates
+    thermald.enable = true; # Thermal management
   };
 
   # Better font rendering
   fonts = {
-  enableDefaultPackages = true;
-  packages = with pkgs; [
-    noto-fonts
-    noto-fonts-cjk-sans
-    noto-fonts-emoji
-    nerd-fonts.fira-code
-    nerd-fonts.jetbrains-mono
-  ];
-  fontconfig = {
-    defaultFonts = {
-      monospace = [ "JetBrains Mono Nerd Font" ];
-      sansSerif = [ "Noto Sans" ];
-      serif = [ "Noto Serif" ];
+    enableDefaultPackages = true;
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk-sans
+      noto-fonts-emoji
+      nerd-fonts.fira-code
+      nerd-fonts.jetbrains-mono
+    ];
+    fontconfig = {
+      defaultFonts = {
+        monospace = [ "JetBrains Mono Nerd Font" ];
+        sansSerif = [ "Noto Sans" ];
+        serif = [ "Noto Serif" ];
+      };
     };
   };
-};
 
   # ==================== SIKKERHEDSKONFIGURATION ====================
   # Aktiver OpenSSH daemon (fjernadgang via SSH)
   services.openssh.enable = true;
 
   # Firewall-konfiguration
-  networking.firewall = {
-    enable = true;  # Aktiver firewall
-    allowedTCPPorts = [ 22 80 443 ];  # Tillad SSH (22), HTTP (80), HTTPS (443)
-    allowedUDPPorts = [ ];             # Ingen UDP-porte tilladt som standard
+ networking.firewall = {
+   allowedTCPPorts = [
+     22 80 443
+     27036 27037 # Steam
+    ];
+   allowedUDPPorts = [
+     27031 27036 # Steam
+     3659 # Lunar Client
+    ];
   };
 
   # Additional security measures
   security = {
-    sudo.wheelNeedsPassword = true; # Require password for sudo
+    sudo = {
+      wheelNeedsPassword = true; # Require password for sudo
+      execWheelOnly = true;      # Only wheel group can use sudo
+    };
     protectKernelImage = true; # Protect kernel from modification
+    auditd.enable = true;      # System auditing
   };
 
   # Denne værdi bestemmer NixOS-udgivelsen som standardindstillingerne er taget fra
