@@ -6,7 +6,7 @@
 
 let
   # Define GPU type here (change to "amd" or "nvidia" depending on your GPU)
-  gpuType = "intel";
+  gpuType = "nvidia";  # ÆNDRET: Fra intel til nvidia
 in
 {
   imports =
@@ -26,6 +26,7 @@ in
   boot.kernelParams = [
     "quiet"           # Reduce boot noise
     "splash"          # Show splash screen
+    "nvidia-drm.modeset=1"  # Tilføjet: NVIDIA DRM modesetting
     "nowatchdog"      # Disable hardware watchdog
     "tsc=reliable"    # Reliable Time Stamp Counter
     "nohibernate"     # Disable hibernation
@@ -42,6 +43,18 @@ in
     "v4l2loopback"  # Virtual video device - god til skærmoptagelse og virtual cameras
     "snd-aloop"     # Virtual lyd-enhed - god til lydoptagelse og routing
   ];
+
+  # ==================== NVIDIA KONFIGURATION ====================
+  hardware.nvidia = {
+    # Modesetting er påkrævet for Wayland og bedre integration
+    modesetting.enable = true;
+    # Power Management (forbrugervenlig på bærbare, kan nogle gange forårsage issues - deaktiver hvis nødvendigt)
+    powerManagement.enable = true;
+    # Brug de open-source kernel-moduler (NOUVEAU)? Sæt til false for at bruge de proprietære NVIDIA-drivere.
+    open = false;
+    # Tillad at bruge NVIDIA Settings værktøjet til at justere indstillinger
+    nvidiaSettings = true;
+  };
 
   # ==================== NETVÆRKSKONFIGURATION ====================
   networking.hostName = "nixos"; # Definerer dit systemets navn på netværket
@@ -105,28 +118,20 @@ in
   # ==================== HARDWARE-STØTTE ====================
   # Modern hardware acceleration
   hardware.graphics = {
-  enable = true;
-  enable32Bit = true;  # Renamed from driSupport32Bit
-     extraPackages = with pkgs; [
+    enable = true;
+    enable32Bit = true;  # Renamed from driSupport32Bit
+    extraPackages = with pkgs; [
       vaapiVdpau
       libvdpau-va-gl
       mesa
-    ] ++ lib.optionals (gpuType == "intel") [
-      intel-media-driver
-      vaapiIntel
-    ] ++ lib.optionals (gpuType == "amd") [
-      amdvlk
-      rocm-opencl-runtime
-    ] ++ lib.optionals (gpuType == "nvidia") [
+    ] ++ lib.optionals (gpuType == "nvidia") [  # ÆNDRET: Tilføjet NVIDIA-pakker
       nvidia-vaapi-driver
     ];
 
     extraPackages32 = with pkgs.pkgsi686Linux; [
       libva
       mesa
-    ] ++ lib.optionals (gpuType == "amd") [
-      amdvlk
-    ] ++ lib.optionals (gpuType == "nvidia") [
+    ] ++ lib.optionals (gpuType == "nvidia") [  # ÆNDRET: Tilføjet 32-bit NVIDIA-pakker
       nvidia-vaapi-driver
     ];
   };
@@ -198,7 +203,7 @@ in
   programs.firefox.enable = true;
 
   # ==================== XDG DESKTOP PORTAL ====================
-  # XDG Desktop Portal integration (nødvendigt for Wayland og app integration)
+  # XDG Desktop Portal integration (nødvendigt för Wayland og app integration)
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
@@ -237,93 +242,98 @@ in
 
   # Liste over pakker installeret i systemprofilen
   environment.systemPackages = with pkgs; [
-    # Versionskontrol og systemværktøjer
-    git          # Versionskontrolsystem
-    vim          # Teksteditor
-    wget         # Hent filer via HTTP/FTP
-    curl         # Overfør data via URL'er
-    htop         # Interaktiv systemovervågning
-    file         # Vis filtypeinformation
-    btop         # Advanced resource monitor
-    nvtopPackages.full         # GPU monitoring
-    smartmontools # Disk health monitoring
-    glxinfo           # OpenGL info tool
-    clinfo            # OpenCL info tool
-    vulkan-loader     # Vulkan loader
-    libnotify         # Desktop notifications
-    xdg-utils         # XDG utilities
 
-    # System diagnosticering
-    lm_sensors # Temperatur monitoring
-    dmidecode # Hardware info
-    usbutils # USB enheder
+  # -------------------------------
+  # Systemværktøjer
+  # -------------------------------
+  bat          # Forbedret 'cat' med syntaksfremhævning
+  btop         # Avanceret interaktiv ressourceovervågning
+  bottom       # Alternativ ressourceovervågning til terminalen
+  curl         # Overfør data via URL'er (HTTP, FTP osv.)
+  duf          # Diskbrugsovervågning med flot output
+  fd           # Hurtig og moderne erstatning for 'find'
+  file         # Viser filtypeinformation
+  git          # Versionskontrolsystem til kode og filer
+  htop         # Interaktiv system- og procesovervågning
+  jq           # JSON processor og manipulationsværktøj
+  neofetch     # Vis systeminformation og OS-banner
+  rsync        # Fil synkronisering mellem systemer
+  tmux         # Terminal multiplexer til sessioner og vinduer
+  unzip        # Udpakning af .zip arkiver
+  vim          # Kraftfuld teksteditor
+  wget         # Hent filer via HTTP/FTP
+  xdg-utils    # Standard desktop utilities (åbn filer, URL'er osv.)
 
-    # Nyttige værktøjer
-    rsync # Fil synkronisering
-    tmux # Terminal multiplexer
-    jq # JSON processor
-    libva-utils # VA-API værktøjer
-    vulkan-tools # Vulkan værktøjer
-    mesa-demos # Mesa demos
+  # -------------------------------
+  # Hardware diagnosticering
+  # -------------------------------
+  clinfo             # OpenCL info tool til GPU compute info
+  dmidecode          # Hent hardwareinformation fra BIOS
+  glxinfo            # OpenGL information og GPU-support
+  inxi               # Udskriv detaljeret systeminformation
+  lm_sensors         # Temperatur og sensorovervågning
+  nvtopPackages.full # GPU monitor til NVIDIA-kort
+  pciutils           # Vis information om PCI-enheder
+  smartmontools      # Disk health og S.M.A.R.T. overvågning
+  vulkan-loader      # Loader til Vulkan API
+  vulkan-tools       # Vulkan værktøjer og demos
 
-    # Arkivværktøjer
-    unzip        # Udpak .zip-filer
-    p7zip        # Udpak .7z-filer
+  # -------------------------------
+  # Desktop / GUI support
+  # -------------------------------
+  kdePackages.dolphin # KDE filhåndtering
+  kdePackages.konsole # KDE terminalemulator
+  libnotify           # Desktop notifikationer
+  libva-utils         # VA-API værktøjer til video acceleration
+  ntfs3g              # NTFS filsystem-understøttelse
+  micro               # Brugervenlig og minimalistisk teksteditor
 
-    # Hardware diagnosticering
-    pciutils     # Viser PCI-enhedsinformation
-    inxi         # System information tool
+  # -------------------------------
+  # Development / Programming
+  # -------------------------------
+  gcc       # C/C++ compiler
+  nodejs    # JavaScript runtime og udviklingsværktøj
+  python3   # Python interpreter
+  rustup    # Rust toolchain installer
+  fzf       # Fuzzy finder til hurtig filsøgning i terminal
 
-    # KDE-applikationer
-    kdePackages.dolphin   # Filhåndtering
-    kdePackages.konsole   # Terminalemulator
+  # -------------------------------
+  # Gaming og optimering
+  # -------------------------------
+  gamemode      # Game optimization tool for Linux
+  gamescope     # Steam Deck-lignende scaling og compositor
+  lutris        # Game manager til Linux
+  mangohud      # Performance overlay til spil
+  protonup-qt   # Administrer Proton versioner til Steam
+  wine          # Windows compatibility layer for Linux
 
-    # Terminalværktøjer
-    ripgrep      # Hurtig filsøgning
-    fd           # Modern erstatning for 'find'
-    eza          # Forbedret 'ls' med farver og metadata
+  # -------------------------------
+  # Virtualisering og containerization
+  # -------------------------------
+  docker-compose # Docker container management
+  distrobox      # Containerized development environments
+  virt-manager   # GUI til libvirt og VM management
+  appimage-run   # Kør AppImage filer direkte
 
-    # Systemovervågning
-    neofetch     # Vis systeminformation
-    bottom       # Ressourceovervågning
-    duf          # Diskbrugsoversigt
+  # -------------------------------
+  # Netværksværktøjer
+  # -------------------------------
+  iperf3 # Netværks-performance måling
+  nmap   # Netværks scanning og sikkerhedsværktøj
 
-    # Tekstbehandling
-    bat          # Forbedrent 'cat' med syntaksfremhævning
-    fzf          # Fuzzy finder til terminalen
+  # -------------------------------
+  # NVIDIA-specifikke værktøjer
+  # -------------------------------
+  linuxPackages.nvidia_x11  # NVIDIA X11 driver til GPU
+  nvidia-vaapi-driver       # NVIDIA VA-API driver til hardware acceleration
 
-    # Filsystemstøtte
-    ntfs3g       # NTFS filsystem-understøttelse
-    micro        # Brugervenlig teksteditor
+  # -------------------------------
+  # Pakkeadministration og Nix-udvidelser
+  # -------------------------------
+  cachix    # Nix binary cache client
+  nix-index # Find hurtigt pakker i NixOS
+];
 
-    # Udviklingsværktøjer
-    nodejs       # JavaScript runtime
-    python3      # Python interpreter
-    gcc          # C/C++ compiler
-    rustup       # Rust toolchain installer
-
-    # Gaming værktøjer
-    gamemode     # Game optimization tool
-    mangohud     # Performance overlay
-    wine         # Windows compatibility layer
-    lutris       # Game manager
-    gamescope    # Steam Deck-like scaling
-    protonup-qt  # Proton version manager
-
-    # Virtualisering
-    docker-compose # Docker container management
-    virt-manager   # GUI for libvirt
-
-    # Netværksværktøjer
-    nmap         # Network exploration tool
-    iperf3       # Network performance measurement
-
-    # Additional useful packages
-    distrobox    # Containerized development environments
-    appimage-run # Run AppImage files
-    nix-index    # Quickly find packages
-    cachix       # Nix binary cache client
-  ];
 
   # ==================== YDERLIGERE SYSTEMKONFIGURATION ====================
   # Aktiver TRIM for SSD-drev (forbedrer ydelse og levetid)
