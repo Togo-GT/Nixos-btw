@@ -31,31 +31,47 @@
   # Enable networking
   networking.networkmanager.enable = true;
 
-  # Set your time zone.
+
+  # Set time zone to Copenhagen (Central European Time)
   time.timeZone = "Europe/Copenhagen";
 
-    # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";  # Brug standard engelsk locale
-  i18n.supportedLocales = [
-    "en_US.UTF-8/UTF-8"
-    "da_DK.UTF-8/UTF-8"
-    "C.UTF-8/UTF-8"  # Tilføj C.UTF-8 som fallback
-  ];
+  # Internationalization settings
+  i18n = {
+    # Default system locale (language and character encoding)
+    defaultLocale = "en_US.UTF-8";
 
-  i18n.extraLocaleSettings = {
-    LANG = "en_US.UTF-8";  # Sæt eksplicit LANG
-    LC_CTYPE = "en_US.UTF-8";  # Sæt karakter encoding
-    LC_NUMERIC = "da_DK.UTF-8";
-    LC_TIME = "da_DK.UTF-8";
-    LC_MONETARY = "da_DK.UTF-8";
-    LC_ADDRESS = "da_DK.UTF-8";
-    LC_IDENTIFICATION = "da_DK.UTF-8";
-    LC_MEASUREMENT = "da_DK.UTF-8";
-    LC_PAPER = "da_DK.UTF-8";
-    LC_TELEPHONE = "da_DK.UTF-8";
-    LC_NAME = "da_DK.UTF-8";
-    # LC_ALL bør ikke sættes da det overstyrer alle andre
+    # Supported locales for the system
+    supportedLocales = [
+      "en_US.UTF-8/UTF-8"  # US English with UTF-8 encoding
+      "da_DK.UTF-8/UTF-8"  # Danish with UTF-8 encoding
+      "C.UTF-8/UTF-8"      # Fallback C locale with UTF-8
+    ];
+
+    # Additional locale environment variables
+    extraLocaleSettings = {
+      LANG = "en_US.UTF-8";              # Default language
+      LC_CTYPE = "en_US.UTF-8";          # Character classification and case conversion
+      LC_NUMERIC = "da_DK.UTF-8";        # Number formatting (Danish style)
+      LC_TIME = "da_DK.UTF-8";           # Date and time format (Danish style)
+      LC_MONETARY = "da_DK.UTF-8";       # Currency formatting (Danish Kroner)
+      LC_ADDRESS = "da_DK.UTF-8";        # Address formatting (Danish style)
+      LC_IDENTIFICATION = "da_DK.UTF-8"; # Metadata about locale information
+      LC_MEASUREMENT = "da_DK.UTF-8";    # Measurement units (metric system)
+      LC_PAPER = "da_DK.UTF-8";          # Paper size standards (A4)
+      LC_TELEPHONE = "da_DK.UTF-8";      # Telephone number formats
+      LC_NAME = "da_DK.UTF-8";           # Name formatting
+      # Note: LC_ALL is intentionally not set as it would override all other settings
+    };
   };
+
+  # Keyboard configuration for X11 (graphical interface)
+  services.xserver.xkb = {
+    layout = "dk";    # Danish keyboard layout
+    variant = "";     # No special variant
+  };
+
+  # Keyboard configuration for virtual console (TTY)
+  console.keyMap = "dk-latin1";  # Danish keyboard layout with Latin-1 encoding
 
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
@@ -65,14 +81,6 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "dk";
-    variant = "";
-  };
-
-  # Configure console keymap
-  console.keyMap = "dk-latin1";
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
