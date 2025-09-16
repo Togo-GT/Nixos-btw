@@ -154,7 +154,7 @@ in
   services.blueman.enable = true;       # Bluetooth GUI-manager
   hardware.bluetooth.powerOnBoot = true; # Tænd Bluetooth ved opstart
 
-  # ==================== SECURITY & POLKIT ====================
+  # ==================== Security & POLKIT ====================
   # Polkit authentication (nødvendigt for KDE og system administration)
   security.polkit.enable = true;
 
