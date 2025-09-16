@@ -142,40 +142,43 @@ i18n = {
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    git
-    vim
-    wget
-    curl
-    htop
-    file
-    unzip
-    p7zip
-    # KDE applications
-    kdePackages.dolphin
-    kdePackages.konsole
-    # Useful utilities
-    ripgrep
-    fd
-    eza
-    # Additional useful tools
-    neofetch
-    bottom
-    duf
-    bat
-    fzf
-    # Nyttige tilføjelser
-    ntfs3g    # NTFS filsystemsupport
-    micro     # Brugervenlig teksteditor
-    fd
-    bat
-    ripgrep
-    eza
-    micro
-    duf
-    bottom
-    fzf
-  ];
+
+ environment.systemPackages = with pkgs; [
+
+  git          # Versionskontrolsystem
+  vim          # Teksteditor
+  wget         # Kommando-linje værktøj til at hente filer via HTTP/FTP
+  curl         # Kommando-linje værktøj til at hente/fremføre data over URL'er
+  htop         # Interaktiv systemmonitor
+  file         # Viser filtypeinformation
+  unzip        # Udpakning af .zip filer
+  p7zip        # Udpakning af .7z filer
+
+ # KDE applications
+
+  kdePackages.dolphin   # KDE filhåndtering
+  kdePackages.konsole   # KDE terminal
+
+ # Useful utilities
+
+ ripgrep      # Hurtig søgning i filer
+  fd           # Moderne og hurtig erstatning for 'find'
+  eza          # Forbedret 'ls'-kommando med farver og kolonner
+
+ # Additional useful tools
+
+ neofetch     # Viser systeminformation i terminalen
+  bottom       # Ressourcemonitor (som htop, men med mere info)
+  duf          # Diskbrugsoversigt i terminalen
+  bat          # Forbedret 'cat' med syntax highlighting
+  fzf          # Fuzzy finder til terminal
+
+ # Nyttige tilføjelser
+
+ ntfs3g       # NTFS filsystem support
+  micro        # Brugervenlig teksteditor, nemmere end vim
+];
+
 
   # Enable TRIM for SSDs
   services.fstrim.enable = true;
@@ -200,21 +203,21 @@ i18n = {
   # Enable Flatpak support
   services.flatpak.enable = true;
 
+
   # Configure power management (uncomment if on laptop)
-  # services.power-profiles-daemon.enable = true;
+  services.power-profiles-daemon.enable = true;
   # services.tlp.enable = true;  # For better battery life
 
   # Enable Steam gaming support (uncomment if wanted)
-  # programs.steam = {
-  #   enable = true;
-  #   remotePlay.openFirewall = true;
-  #   dedicatedServer.openFirewall = true;
-  # };
+  programs.steam = {
+     enable = true;
+     remotePlay.openFirewall = true;
+     dedicatedServer.openFirewall = true;
+  };
 
-  # GPU support (uncomment and configure based on your GPU)
-  # For NVIDIA:
-  # services.xserver.videoDrivers = [ "nvidia" ];
-  # hardware.opengl.enable = true;
+
+
+
 
   # For AMD:
   # hardware.opengl.extraPackages = with pkgs; [
@@ -232,11 +235,11 @@ i18n = {
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
+  networking.firewall.allowedTCPPorts = [ 22 80 443 ];
+  networking.firewall.allowedUDPPorts = [  ];
   # Or disable the firewall altogether.
   networking.firewall.enable = true;
 
