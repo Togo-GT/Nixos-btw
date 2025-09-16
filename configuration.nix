@@ -18,7 +18,7 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Enable useful kernel modules
-  boot.initrd.kernelModules = [ "amdgpu" ];  # If using AMD GPU
+  boot.initrd.kernelModules = [ "amdgpu" ];  # Fjern hvis du ikke har AMD GPU
   boot.kernelModules = [ "fuse" "v4l2loopback" ];  # Useful modules
 
   networking.hostName = "nixos"; # Define your hostname.
@@ -35,8 +35,8 @@
   time.timeZone = "Europe/Copenhagen";
 
   # Select internationalisation properties.
-  i18n.defaultLocale = "en_DK.UTF-8";
-  i18n.supportedLocales = ["en_DK.UTF-8/UTF-8" "da_DK.UTF-8/UTF-8"];
+  i18n.defaultLocale = "en_US.UTF-8";  # Ændret fra en_DK til en_US
+  i18n.supportedLocales = ["en_US.UTF-8/UTF-8" "da_DK.UTF-8/UTF-8"];
 
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "da_DK.UTF-8";
@@ -105,8 +105,9 @@
   };
 
   # Enable automatic login for the user.
-  services.displayManager.autoLogin.enable = true;
-  services.displayManager.autoLogin.user = "togo-gt";
+  # Sikkerhedsforbedring: deaktiveret automatisk login
+  services.displayManager.autoLogin.enable = false;
+  # services.displayManager.autoLogin.user = "togo-gt";
 
   # Install firefox.
   programs.firefox.enable = true;
@@ -148,6 +149,9 @@
     duf
     bat
     fzf
+    # Nyttige tilføjelser
+    ntfs3g    # NTFS filsystemsupport
+    micro     # Brugervenlig teksteditor
   ];
 
   # Enable TRIM for SSDs
@@ -159,6 +163,9 @@
   # Enable Bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
+
+  # Bluetooth power management
+  hardware.bluetooth.powerOnBoot = true;  # Tilføjet Bluetooth power management
 
   # Bluetooth audio support
   hardware.bluetooth.settings = {
