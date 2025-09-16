@@ -1,6 +1,98 @@
-# Ignore build outputs from performing a nix-build or `nix build` command
+# =============================================
+# Nix-specifikt
+# =============================================
+
+# 🖥 Hardware scan results
+#./hardware-configuration.nix
+
+# Symboliske links fra `nix-build` og `nix build`
 result
 result-*
+*-result
 
-# Ignore automatically generated direnv output
-.direnv
+# Nix development shell outputs (fx. fra `nix-shell --run ...`)
+shell.drv
+
+# Garbage collection roots (fx. fra `nix-collect-garbage -d`)
+/gc-roots/
+/nix/var/nix/gcroots/auto/*
+
+# Nix lock-filer (brugt af nixos-rebuild og andre værktøjer)
+*.lock
+
+# =============================================
+# Direnv / Lorri / Nix-direnv
+# =============================================
+.direnv/
+.lorri/
+.direnv.d/
+
+# =============================================
+# Editor og IDE specifikt
+# =============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# IntelliJ IDEA, CLion, etc.
+.idea/
+*.iml
+*.iws
+
+# Vim / Neovim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.\\#*
+
+# =============================================
+# Generelt
+# =============================================
+# OS-genererede filer
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup-filer
+*.bak
+*.backup
+
+# =============================================
+# Valgfrit: Til hjemme-manager (Home Manager) projekter
+# =============================================
+# Home Manager generation results
+.home-*
+
+# =============================================
+# Valgfrit: Til Python/Node.js projekter i nix-shell
+# =============================================
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+#GT-nixos-btw
