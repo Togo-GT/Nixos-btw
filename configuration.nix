@@ -34,20 +34,27 @@
   # Set your time zone.
   time.timeZone = "Europe/Copenhagen";
 
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";  # Ændret fra en_DK til en_US
-  i18n.supportedLocales = ["en_US.UTF-8/UTF-8" "da_DK.UTF-8/UTF-8"];
+    # Select internationalisation properties.
+  i18n.defaultLocale = "en_US.UTF-8";  # Brug standard engelsk locale
+  i18n.supportedLocales = [
+    "en_US.UTF-8/UTF-8"
+    "da_DK.UTF-8/UTF-8"
+    "C.UTF-8/UTF-8"  # Tilføj C.UTF-8 som fallback
+  ];
 
   i18n.extraLocaleSettings = {
+    LANG = "en_US.UTF-8";  # Sæt eksplicit LANG
+    LC_CTYPE = "en_US.UTF-8";  # Sæt karakter encoding
+    LC_NUMERIC = "da_DK.UTF-8";
+    LC_TIME = "da_DK.UTF-8";
+    LC_MONETARY = "da_DK.UTF-8";
     LC_ADDRESS = "da_DK.UTF-8";
     LC_IDENTIFICATION = "da_DK.UTF-8";
     LC_MEASUREMENT = "da_DK.UTF-8";
-    LC_MONETARY = "da_DK.UTF-8";
-    LC_NAME = "da_DK.UTF-8";
-    LC_NUMERIC = "da_DK.UTF-8";
     LC_PAPER = "da_DK.UTF-8";
     LC_TELEPHONE = "da_DK.UTF-8";
-    LC_TIME = "da_DK.UTF-8";
+    LC_NAME = "da_DK.UTF-8";
+    # LC_ALL bør ikke sættes da det overstyrer alle andre
   };
 
   # Enable the X11 windowing system.
