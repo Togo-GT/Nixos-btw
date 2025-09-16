@@ -17,6 +17,10 @@
   # Use latest kernel.
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
+  # Enable useful kernel modules
+  boot.initrd.kernelModules = [ "amdgpu" ];  # If using AMD GPU
+  boot.kernelModules = [ "fuse" "v4l2loopback" ];  # Useful modules
+
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -92,7 +96,7 @@
   users.users.togo-gt = {
     isNormalUser = true;
     description = "Togo-GT";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
     shell = pkgs.zsh;
     packages = with pkgs; [
       kdePackages.kate
@@ -138,6 +142,12 @@
     ripgrep
     fd
     eza
+    # Additional useful tools
+    neofetch
+    bottom
+    duf
+    bat
+    fzf
   ];
 
   # Enable TRIM for SSDs
@@ -149,6 +159,37 @@
   # Enable Bluetooth
   hardware.bluetooth.enable = true;
   services.blueman.enable = true;
+
+  # Bluetooth audio support
+  hardware.bluetooth.settings = {
+    General = {
+      Enable = "Source,Sink,Media,Socket";
+    };
+  };
+
+  # Enable Flatpak support
+  services.flatpak.enable = true;
+
+  # Configure power management (uncomment if on laptop)
+  # services.power-profiles-daemon.enable = true;
+  # services.tlp.enable = true;  # For better battery life
+
+  # Enable Steam gaming support (uncomment if wanted)
+  # programs.steam = {
+  #   enable = true;
+  #   remotePlay.openFirewall = true;
+  #   dedicatedServer.openFirewall = true;
+  # };
+
+  # GPU support (uncomment and configure based on your GPU)
+  # For NVIDIA:
+  # services.xserver.videoDrivers = [ "nvidia" ];
+  # hardware.opengl.enable = true;
+
+  # For AMD:
+  # hardware.opengl.extraPackages = with pkgs; [
+  #   amdvlk
+  # ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
