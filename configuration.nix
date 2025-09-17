@@ -38,6 +38,8 @@ in
     "nohibernate"     # Disable hibernation (saves memory and avoids issues)
     "mitigations=off" # For better performance (security trade-off)
     "preempt=full"    # Better for desktop responsiveness
+    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    "nvidia.NVreg_EnablePCIeGen3=1"
   ];
 
   # Kernel modules to load in initial ramdisk for early hardware access
@@ -62,11 +64,16 @@ in
     # Modesetting is required for Wayland and better integration
     modesetting.enable = true;
     # Power Management (saves power on laptops, disable if causing issues)
-    powerManagement.enable = true;
+    powerManagement = {
+      enable = true;
+      finegrained = true;  # Better power management
+    };
     # Use open-source kernel modules (NOUVEAU)? Set to false to use proprietary NVIDIA drivers.
     open = false;
     # Allow using NVIDIA Settings tool to adjust settings
     nvidiaSettings = true;
+    # Fix screen tearing
+    forceFullCompositionPipeline = true;
     # Prime offload for better hybrid graphics support
     prime = {
       offload = {
@@ -77,6 +84,9 @@ in
     # Use stable NVIDIA package with current kernel
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
+
+  # NVIDIA persistence service for better driver stability
+  services.nvidia-persistenced.enable = true;
 
   # ==================== NETWORK CONFIGURATION ====================
   networking.hostName = "nixos"; # Define your system's network name
@@ -89,38 +99,38 @@ in
   time.timeZone = "Europe/Copenhagen";
 
   # Enable and configure NTP for time synchronization
-services.timesyncd = {
-  enable = true;
-  servers = [
-    "0.dk.pool.ntp.org"
-    "1.dk.pool.ntp.org"
-    "2.dk.pool.ntp.org"
-    "3.dk.pool.ntp.org"
-  ];
-};
+  systemd.timesyncd = {
+    enable = true;
+    servers = [
+      "0.dk.pool.ntp.org"
+      "1.dk.pool.ntp.org"
+      "2.dk.pool.ntp.org"
+      "3.dk.pool.ntp.org"
+    ];
+  };
 
   i18n = {
-  defaultLocale = "en_DK.UTF-8";  # Changed from en_US to en_DK
+    defaultLocale = "en_DK.UTF-8";  # Changed from en_US to en_DK
 
-  # List of languages to support on the system
-  supportedLocales = [
-    "en_DK.UTF-8/UTF-8"  # Changed from en_US to en_DK
-    "da_DK.UTF-8/UTF-8"  # Danish
-  ];
+    # List of languages to support on the system
+    supportedLocales = [
+      "en_DK.UTF-8/UTF-8"  # Changed from en_US to en_DK
+      "da_DK.UTF-8/UTF-8"  # Danish
+    ];
 
-  # Extra environment variables for fine-tuning locale settings
-  extraLocaleSettings = {
-    LANG = "en_DK.UTF-8";        # Changed from en_US to en_DK
-    LC_CTYPE = "en_DK.UTF-8";    # Changed from en_US to en_DK
-    LC_NUMERIC = "da_DK.UTF-8";  # Use Danish number formatting
-    LC_TIME = "da_DK.UTF-8";     # Use Danish time format (24-hour)
-    LC_MONETARY = "da_DK.UTF-8"; # Use Danish currency format
-    LC_ADDRESS = "da_DK.UTF-8";  # Use Danish address formatting
-    LC_IDENTIFICATION = "da_DK.UTF-8"; # Use Danish locale metadata
-    LC_MEASUREMENT = "da_DK.UTF-8";    # Use Danish measurement units
-    LC_PAPER = "da_DK.UTF-8";          # Use Danish paper size
-    LC_TELEPHONE = "da_DK.UTF-8";      # Use Danish telephone formatting
-    LC_NAME = "da_DK.UTF-8";           # Use Danish name formatting
+    # Extra environment variables for fine-tuning locale settings
+    extraLocaleSettings = {
+      LANG = "en_DK.UTF-8";        # Changed from en_US to en_DK
+      LC_CTYPE = "en_DK.UTF-8";    # Changed from en_US to en_DK
+      LC_NUMERIC = "da_DK.UTF-8";  # Use Danish number formatting
+      LC_TIME = "da_DK.UTF-8";     # Use Danish time format (24-hour)
+      LC_MONETARY = "da_DK.UTF-8"; # Use Danish currency format
+      LC_ADDRESS = "da_DK.UTF-8";  # Use Danish address formatting
+      LC_IDENTIFICATION = "da_DK.UTF-8"; # Use Danish locale metadata
+      LC_MEASUREMENT = "da_DK.UTF-8";    # Use Danish measurement units
+      LC_PAPER = "da_DK.UTF-8";          # Use Danish paper size
+      LC_TELEPHONE = "da_DK.UTF-8";      # Use Danish telephone formatting
+      LC_NAME = "da_DK.UTF-8";           # Use Danish name formatting
     };
   };
 
@@ -148,6 +158,14 @@ services.timesyncd = {
 
   # Enable KDE Plasma 6 desktop
   services.desktopManager.plasma6.enable = true;
+
+  # Environment variables for Wayland with NVIDIA
+  environment.sessionVariables = {
+    # Fix Wayland issues with NVIDIA
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    WLR_NO_HARDWARE_CURSORS = "1";
+  };
 
   # ==================== HARDWARE SUPPORT ====================
   # Modern hardware acceleration settings
@@ -184,6 +202,13 @@ services.timesyncd = {
     alsa.support32Bit = true;   # Support for 32-bit applications
     pulse.enable = true;        # PulseAudio compatibility layer
     jack.enable = true;         # Enable JACK application support (audio production)
+    wireplumber.enable = true;  # Session manager
+    config.pipewire = {
+      "context.properties" = {
+        "link.max-buffers" = 16;
+        "log.level" = 2;
+      };
+    };
   };
 
   # Bluetooth configuration
@@ -212,6 +237,10 @@ services.timesyncd = {
     };
     autosuggestions.enable = true;     # Enable command suggestions
     syntaxHighlighting.enable = true;  # Enable syntax highlighting
+    interactiveShellInit = ''
+      zstyle ':completion:*' menu select
+      zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+    '';
   };
 
   # Set ZSH as default system shell
@@ -259,6 +288,7 @@ services.timesyncd = {
   # ==================== NIX PACKAGE CONFIGURATION ====================
   # Allow non-free (proprietary) packages
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.allowAliases = false;
 
   # Nix optimization settings
   nix.settings = {
@@ -338,8 +368,6 @@ services.timesyncd = {
   tmuxp          # Tmux session manager with YAML configuration
   watch          # Execute program periodically with full-screen output
   zsh            # Z shell with extensive customization and plugin support
-  zsh-autosuggestions    # Fish-like autosuggestions for Zsh based on history
-  zsh-syntax-highlighting # Syntax highlighting for Zsh command line
 
   # --------------------------------------------------------------------------
   # Miscellaneous Tools
@@ -417,226 +445,4 @@ services.timesyncd = {
 
   # --------------------------------------------------------------------------
   # Browsers & Communication
-  # --------------------------------------------------------------------------
-  chromium       # Open-source version of Chrome browser
-  firefox        # Firefox web browser with privacy focus
-  signal-desktop # Secure messaging app with end-to-end encryption
-  telegram-desktop # Feature-rich messaging app with channels and bots
-  thunderbird    # Email client with calendar and contacts integration
-
-  # --------------------------------------------------------------------------
-  # Multimedia
-  # --------------------------------------------------------------------------
-  audacity       # Audio editing software with multi-track capabilities
-  handbrake      # Video transcoder with presets and fine-grained controls
-  mpv            # Versatile media player with scripting support
-  spotify        # Music streaming service with extensive catalog
-  vlc            # Media player that supports virtually all formats
-  ffmpeg         # Complete, cross-platform solution to record, convert and stream audio and video
-
-  # --------------------------------------------------------------------------
-  # Graphics & Design
-  # --------------------------------------------------------------------------
-  gimp           # GNU Image Manipulation Program for photo retouching
-  inkscape       # Vector graphics editor for SVG creation and editing
-  krita          # Digital painting application with brush engines
-  kdePackages.okular  # Qt 6 version
-  zathura        # Minimalist document viewer with vim-like keybindings
-  imagemagick    # Software suite to create, edit, compose, or convert bitmap images
-
-  # --------------------------------------------------------------------------
-  # Utilities & System Tools
-  # --------------------------------------------------------------------------
-  distrobox      # Containerized application environments using Podman/Docker
-  kdePackages.dolphin   # Qt 6 version
-  evince         # Document viewer with search and presentation modes (GNOME)
-  feh            # Lightweight image viewer for quick viewing
-  gparted        # Partition editor for disk management tasks
-  kdePackages.konsole   # Qt 6 version (recommended)
-  obs-studio     # Screen recording and streaming for content creation
-  paprefs        # PulseAudio preferences GUI for advanced audio configuration
-  protonup-qt    # Proton-GE and Wine-GE management for gaming compatibility
-  transmission-gtk # BitTorrent client with web interface (GTK version)
-
-  # --------------------------------------------------------------------------
-  # Gaming
-  # --------------------------------------------------------------------------
-  gamescope      # SteamOS compositor and scaling tool for games
-  lutris         # Game management platform with installer scripts
-  wine           # Windows compatibility layer for running Windows applications
-
-  # --------------------------------------------------------------------------
-  # Development Tools
-  # --------------------------------------------------------------------------
-  vscode         # Code editor with extensive extension support
-  jetbrains.idea-ultimate # Intelligent Java IDE with advanced features
-
-  # ==========================================================================
-  # HARDWARE & SYSTEM INFO
-  # ==========================================================================
-
-  # --------------------------------------------------------------------------
-  # GPU & Graphics
-  # --------------------------------------------------------------------------
-  clinfo         # OpenCL platform and device information
-  glxinfo        # OpenGL information utility for driver capabilities
-  vulkan-loader  # Vulkan loader for graphics API support
-  vulkan-tools   # Vulkan utilities including vkcube and vulkaninfo
-  nvidia-vaapi-driver # VA-API implementation using NVDEC for hardware acceleration
-
-  # --------------------------------------------------------------------------
-  # System Information
-  # --------------------------------------------------------------------------
-  dmidecode      # DMI table decoder for hardware information
-  inxi           # Full system information tool with comprehensive reporting
-  pciutils       # PCI bus configuration space access (lspci utility)
-
-  # --------------------------------------------------------------------------
-  # Storage & Disk Health
-  # --------------------------------------------------------------------------
-  smartmontools  # S.M.A.R.T. monitoring tools for disk health
-  ntfs3g         # NTFS read-write driver for Windows filesystems
-
-  # --------------------------------------------------------------------------
-  # Gaming Performance
-  # --------------------------------------------------------------------------
-  gamemode       # Optimize system performance for games by adjusting priorities
-  mangohud       # Vulkan/OpenGL overlay for monitoring FPS, temps, and usage
-
-  # --------------------------------------------------------------------------
-  # Miscellaneous Hardware
-  # --------------------------------------------------------------------------
-  libnotify      # Desktop notifications for application events
-  libva-utils    # Video Acceleration API utilities for hardware decoding
-];
-
-  # ==================== ADDITIONAL SYSTEM CONFIGURATION ====================
-  # Enable TRIM for SSD drives (improves performance and lifespan)
-  services.fstrim.enable = true;
-
-  # Enable early OOM daemon (handles memory shortages early)
-  services.earlyoom.enable = true;
-
-  # Flatpak support (for installing apps from Flathub)
-  services.flatpak.enable = true;
-
-  # Power management (especially useful for laptops)
-  services.power-profiles-daemon.enable = true; # Recommended for KDE
-  services.auto-cpufreq.enable = false;  # Disabled alternative power management
-  services.tlp.enable = false;           # Disabled alternative power management
-
-  # Steam gaming support
-  programs.steam = {
-    enable = true;                      # Enable Steam
-    remotePlay.openFirewall = true;     # Open firewall for Remote Play
-    dedicatedServer.openFirewall = true; # Open firewall for dedicated servers
-  };
-
-  # Gaming optimization
-  programs.gamemode.enable = true;
-
-  # Hardware monitoring
-  services.hardware.bolt.enable = true; # Thunderbolt support
-
-  # Virtualization support
-  virtualisation = {
-    docker = {
-      enable = true;
-      rootless = {  # Run Docker without root privileges (more secure)
-        enable = true;
-        setSocketVariable = true;
-      };
-    };
-    libvirtd = {
-      enable = true;
-      qemu = {
-        runAsRoot = true;
-        swtpm.enable = true;  # Software TPM support for virtual machines
-      };
-    };
-  };
-
-  # Additional services
-  services = {
-    avahi = { # Network service discovery (mDNS)
-      enable = true;
-      nssmdns4 = true;  # Enable mDNS name resolution
-    };
-    fwupd.enable = true; # Firmware updates
-    thermald.enable = true; # Thermal management for Intel CPUs
-    tumbler.enable = true; # For thumbnails and file previews
-    
-    # For better gaming performance
-    sysctl = {
-      enable = true;
-      extraConfig = ''
-        # Better gaming performance
-        vm.max_map_count = 16777216
-        fs.file-max = 524288
-      '';
-    };
-  };
-
-  # Better font rendering
-  fonts = {
-    enableDefaultPackages = true;  # Enable default font packages
-
-    packages = with pkgs; [
-      noto-fonts            # Google's font family
-      noto-fonts-cjk-sans   # Chinese, Japanese, Korean sans-serif fonts
-      noto-fonts-emoji      # Emoji font
-      nerd-fonts.fira-code  # Programming font with ligatures
-      nerd-fonts.jetbrains-mono # Another programming font
-    ];
-
-    fontconfig = {
-      defaultFonts = {
-        monospace = [ "JetBrainsMono Nerd Font" "Noto Sans Mono" ];
-        sansSerif = [ "Noto Sans" ];
-        serif = [ "Noto Serif" ];
-      };
-    };
-  };
-
-  # ==================== Security CONFIGURATION ====================
-  # Enable OpenSSH daemon (remote access via SSH)
-  services.openssh.enable = true;
-
-  # Firewall configuration
-  networking.firewall = {
-    allowedTCPPorts = [
-      22    # SSH
-      80    # HTTP
-      443   # HTTPS
-      27036 # Steam
-      27037 # Steam
-    ];
-    allowedUDPPorts = [
-      27031 # Steam
-      27036 # Steam
-      3659  # Lunar Client (Minecraft)
-    ];
-    allowedUDPPortRanges = [
-      { from = 27000; to = 27031; } # Steam
-      { from = 4380; to = 4380; }   # Steam
-      { from = 27000; to = 27030; } # More Steam
-    ];
-  };
-
-  # Additional security measures
-  security = {
-    sudo = {
-      wheelNeedsPassword = true; # Require password for sudo
-      execWheelOnly = true;      # Only wheel group can use sudo
-    };
-    protectKernelImage = true; # Protect kernel from modification
-    auditd.enable = true;      # System auditing
-  };
-
-  # This value determines the NixOS release from which the default settings
-  # were taken. It's perfectly fine and recommended to leave this value at the
-  # release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
-}
+  # -----------
