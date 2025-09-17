@@ -65,7 +65,7 @@ in
   };
 
   # ==================== NETWORK CONFIGURATION ====================
-  networking.hostName = "nixos"; # Define your system's network name
+  networking.hostName = "nixos-btw"; # Define your system's network name
 
   # Enable NetworkManager (recommended for both wired and wireless networks)
   networking.networkmanager.enable = true;
