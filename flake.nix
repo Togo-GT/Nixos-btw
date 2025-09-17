@@ -192,6 +192,9 @@
             ];
           };
 
+          # Set ZSH as default shell for all users
+          users.defaultUserShell = pkgs.zsh;
+
           services.displayManager.autoLogin.enable = false;
 
           programs.firefox.enable = true;
@@ -343,6 +346,8 @@
             settings = {
               CPU_SCALING_GOVERNOR_ON_AC = "performance";
               CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+              CPU_BOOST_ON_AC = 1;
+              CPU_BOOST_ON_BAT = 0;
             };
           };
 
