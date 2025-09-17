@@ -443,7 +443,7 @@ services.timesyncd = {
   # --------------------------------------------------------------------------
   # Gaming
   # --------------------------------------------------------------------------
-  gamescope      # SteamOS compositor and scaling tool for games
+  # gamescope      # SteamOS compositor and scaling tool for games
   lutris         # Game management platform with installer scripts
   wine           # Windows compatibility layer for running Windows applications
 
@@ -503,10 +503,16 @@ services.timesyncd = {
 
   # Steam gaming support
   programs.steam = {
-    enable = true;                      # Enable Steam
-    remotePlay.openFirewall = true;     # Open firewall for Remote Play
-    dedicatedServer.openFirewall = true; # Open firewall for dedicated servers
+  enable = true;                        # Enable Steam
+  remotePlay.openFirewall = true;       # Open firewall for Remote Play
+  dedicatedServer.openFirewall = true;  # Open firewall for dedicated servers
   };
+
+  # Gamescope support
+  programs.gamescope = {
+  enable = true;   # Enable Valve's micro-compositor
+  };
+
 
   # Gaming optimization
   programs.gamemode.enable = true;
