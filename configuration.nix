@@ -145,6 +145,7 @@ in
 
     # Enable the NVIDIA Settings application for configuration tweaks
     nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
 
     # NVIDIA Optimus configuration for laptops with Intel + NVIDIA GPUs
     prime = {
@@ -578,8 +579,8 @@ in
     vulkan-loader  # Vulkan loader
     vulkan-tools   # Vulkan utilities
     nvidia-vaapi-driver # VA-API for NVIDIA
-    config.boot.kernelPackages.nvidia_x11
-    nvidia-vaapi-driver
+    # config.boot.kernelPackages.nvidia_x11
+    # nvidia-vaapi-driver
 
     # System Information
     dmidecode      # Hardware information
