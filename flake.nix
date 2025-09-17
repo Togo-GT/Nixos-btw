@@ -20,7 +20,7 @@
           # =============================================================================
           boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
           boot.initrd.kernelModules = [ ];
-          boot.kernelModules = [ "kvm-intel" ];
+          boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
           boot.extraModulePackages = [ ];
 
           fileSystems."/" = {
@@ -53,13 +53,6 @@
               "quiet" "splash" "nvidia-drm.modeset=1" "nowatchdog" "tsc=reliable"
               "nohibernate" "nvreg_EnableMSI=1"
             ];
-            initrd.availableKernelModules = [
-              "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod"
-            ];
-            kernelModules = [
-              "fuse" "v4l2loopback" "snd-aloop" "nvidia"
-              "nvidia_modeset" "nvidia_uvm" "nvidia_drm"
-            ];
           };
 
           hardware.nvidia = {
@@ -74,8 +67,6 @@
               nvidiaBusId = "PCI:1:0:0";
             };
           };
-
-          hardware.cpu.intel.updateMicrocode = true;
 
           hardware.graphics = {
             enable = true;
