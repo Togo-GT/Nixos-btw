@@ -20,8 +20,8 @@
           # =============================================================================
           boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
           boot.initrd.kernelModules = [ ];
-          boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
-          boot.extraModulePackages = [ ];
+          boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "acpi_call" ];  # Added acpi_call
+          boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];  # Added acpi_call
 
           fileSystems."/" = {
             device = "/dev/disk/by-uuid/e022ad77-03e6-4ec3-8cf6-5c770fc84bcf";
@@ -41,6 +41,7 @@
           networking.useDHCP = lib.mkDefault true;
           nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
           hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+          hardware.enableRedistributableFirmware = true;  # Added firmware updates
 
           # =============================================================================
           # SYSTEM CONFIGURATION (from configuration.nix)
@@ -132,7 +133,7 @@
               LC_TIME = "da_DK.UTF-8";
               LC_MONETARY = "da_DK.UTF-8";
               LC_ADDRESS = "da_DK.UTF-8";
-              LC_IDENTification = "da_DK.UTF-8";
+              LC_IDENTIFICATION = "da_DK.UTF-8";  # Fixed spelling
               LC_MEASUREMENT = "da_DK.UTF-8";
               LC_PAPER = "da_DK.UTF-8";
               LC_TELEPHONE = "da_DK.UTF-8";
@@ -203,6 +204,8 @@
           nix.settings = {
             experimental-features = [ "nix-command" "flakes" ];
             auto-optimise-store = true;
+            keep-outputs = true;  # Added for better dev environment support
+            keep-derivations = true;  # Added for better dev environment support
             substituters = [
               "https://cache.nixos.org"
               "https://nix-community.cachix.org"
@@ -334,6 +337,7 @@
           services.earlyoom.enable = true;
           services.flatpak.enable = true;
 
+          # Ensure power-profiles-daemon is fully disabled when using TLP
           services.power-profiles-daemon.enable = lib.mkForce false;
           systemd.user.services."power-profiles-daemon" = {
             enable = false;
