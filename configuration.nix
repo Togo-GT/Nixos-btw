@@ -116,6 +116,13 @@ in
       "fuse"          # Filesystem in Userspace (for NTFS, SSHFS, etc.)
       "v4l2loopback"  # Virtual video device (for screen recording, virtual cameras)
       "snd-aloop"     # Virtual audio device (for audio routing and recording)
+      "nvidia"
+      "nvidia_modeset"
+      "nvidia_uvm"
+      "nvidia_drm"
+      "fuse"
+      "v4l2loopback"
+      "snd-aloop"
     ];
   };
 
@@ -277,6 +284,8 @@ in
     variant = "";     # No special variant
   };
 
+
+
   # Console keyboard settings (for virtual terminals)
   console.keyMap = "dk-latin1";  # Danish keyboard with Latin-1 encoding
 
@@ -287,6 +296,7 @@ in
   # -----------------
   # The X Window System provides the foundation for graphical interfaces
   services.xserver.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   # MIME Type Support
   # -----------------
@@ -562,6 +572,8 @@ in
     vulkan-loader  # Vulkan loader
     vulkan-tools   # Vulkan utilities
     nvidia-vaapi-driver # VA-API for NVIDIA
+    config.boot.kernelPackages.nvidia_x11
+    nvidia-vaapi-driver
 
     # System Information
     dmidecode      # Hardware information
