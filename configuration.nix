@@ -292,11 +292,17 @@ in
   # ===========================================================================
   # SECTION 6: GRAPHICAL ENVIRONMENT
   # ===========================================================================
+
+  services.xserver = {
+  enable = true;
+  # Add this line to specify the video drivers
+  videoDrivers = [ "nvidia" ];
+  };
+
   # X11 Window System
   # -----------------
   # The X Window System provides the foundation for graphical interfaces
-  services.xserver.enable = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
+  # services.xserver.enable = true;
 
   # MIME Type Support
   # -----------------
