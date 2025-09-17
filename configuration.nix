@@ -93,6 +93,7 @@ in
       "nowatchdog"      # Disables hardware watchdog timer (can cause issues)
       "tsc=reliable"    # Marks Time Stamp Counter as reliable (better performance)
       "nohibernate"     # Disables hibernation to prevent related issues
+       "nvreg_EnableMSI=1"  # Aktiverer Message Signaled Interrupts for bedre ydeevne
     ];
 
     # Initial RAM Disk Modules
@@ -144,8 +145,8 @@ in
       # Bus IDs from your lspci output:
       # Intel: 00:02.0 → "PCI:0:2:0"
       # NVIDIA: 01:00.0 → "PCI:1:0:0"
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
+    intelBusId = "PCI:0:2:0";    # Intel HD Graphics 530 → 00:02.0
+    nvidiaBusId = "PCI:1:0:0";   # NVIDIA GTX 960M → 01:00.0
     };
   };
 
