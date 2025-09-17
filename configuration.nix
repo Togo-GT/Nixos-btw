@@ -41,11 +41,11 @@ let
   # - "intel": For Intel integrated graphics
   # - "amd": For AMD Radeon graphics cards
   # - "nvidia": For NVIDIA graphics cards (requires proprietary drivers)
-  #
+  # - "optimus": For NVIDIA Optimus laptops with both Intel and NVIDIA GPUs
   # Technical Details:
   # The lib.optionals function later in the config will use this variable to
   # conditionally include the appropriate graphics packages and settings
-  gpuType = "nvidia";
+  gpuType = "optimus";
 
 in
 {
@@ -137,7 +137,21 @@ in
 
     # Enable the NVIDIA Settings application for configuration tweaks
     nvidiaSettings = true;
+
+    # NVIDIA Optimus configuration for laptops with Intel + NVIDIA GPUs
+    prime = {
+      sync.enable = true;
+      # Bus IDs from your lspci output:
+      # Intel: 00:02.0 → "PCI:0:2:0"
+      # NVIDIA: 01:00.0 → "PCI:1:0:0"
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
   };
+
+  # Intel Microcode Updates
+  # -----------------------
+  hardware.cpu.intel.updateMicrocode = true;
 
   # Graphics Acceleration
   # ---------------------
@@ -151,7 +165,7 @@ in
       vaapiVdpau       # VA-API implementation using VDPAU
       libvdpau-va-gl   # VDPAU driver with VA-API support
       mesa             # Open-source graphics driver
-    ] ++ lib.optionals (gpuType == "nvidia") [
+    ] ++ lib.optionals (gpuType == "nvidia" || gpuType == "optimus") [
       nvidia-vaapi-driver  # VA-API implementation for NVIDIA hardware
     ];
 
@@ -159,7 +173,7 @@ in
     extraPackages32 = with pkgs.pkgsi686Linux; [
       libva            # Video Acceleration API
       mesa             # Open-source graphics driver (32-bit)
-    ] ++ lib.optionals (gpuType == "nvidia") [
+    ] ++ lib.optionals (gpuType == "nvidia" || gpuType == "optimus") [
       nvidia-vaapi-driver  # VA-API implementation for NVIDIA hardware (32-bit)
     ];
   };
@@ -424,6 +438,8 @@ in
     glances        # Cross-platform system monitoring
     iotop          # I/O usage monitoring
     nethogs        # Bandwidth monitoring per process
+    # nvtop          # GPU process monitoring
+    powertop       # Power usage monitoring
 
     # Backup & Sync
     borgbackup     # Deduplicating backup program
@@ -579,9 +595,43 @@ in
   # ------------------------
   services.flatpak.enable = true;  # Flatpak support
 
-  # Power Management
-  # ----------------
-  services.power-profiles-daemon.enable = true;  # Power management daemon
+  # -----------------------------
+  # Power Management - Using TLP
+  # ----------------------------
+  # Disable power-profiles-daemon at the system level
+  # This prevents conflicts with TLP by stopping the daemon that manages power profiles
+    services.power-profiles-daemon.enable = lib.mkForce false;
+
+  # -----------------------------
+  # Disable power-profiles-daemon at the user level
+  # Stops user-level power-profiles-daemon so it cannot interfere with TLP
+   systemd.user.services."power-profiles-daemon" = {
+   enable = false;          # Do not start the user service
+   wantedBy = lib.mkForce []; # Ensure no default targets request it
+  };
+
+  # -----------------------------
+  # Enable TLP service for laptop power management
+  # This service manages CPU frequency, battery, and power-saving settings
+  services.tlp = {
+  enable = true;            # Turn on TLP
+  settings = {
+    # CPU scaling governor when on AC power
+    # 'performance' keeps CPU running fast for maximum performance
+    CPU_SCALING_GOVERNOR_ON_AC = "performance";
+
+    # CPU scaling governor when on battery
+    # 'powersave' reduces CPU speed to save battery
+    CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
+
+    # You can add more TLP settings here, e.g.,
+    # DISK_IDLE_SECS_ON_AC = 0          # Disable disk spindown on AC
+    # DISK_IDLE_SECS_ON_BAT = 2         # Spin down disks after 2 seconds on battery
+    # SCHED_POWERSAVE_ON_AC = 0         # Scheduler optimization for AC
+    # SCHED_POWERSAVE_ON_BAT = 1        # Scheduler optimization for battery
+  };
+};
+
 
   # Gaming Support
   # --------------
