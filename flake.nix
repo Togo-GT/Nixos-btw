@@ -132,7 +132,7 @@
               LC_TIME = "da_DK.UTF-8";
               LC_MONETARY = "da_DK.UTF-8";
               LC_ADDRESS = "da_DK.UTF-8";
-              LC_IDENTIFICATION = "da_DK.UTF-8";
+              LC_IDENTification = "da_DK.UTF-8";
               LC_MEASUREMENT = "da_DK.UTF-8";
               LC_PAPER = "da_DK.UTF-8";
               LC_TELEPHONE = "da_DK.UTF-8";
@@ -192,7 +192,6 @@
             ];
           };
 
-          # Set ZSH as default shell for all users
           users.defaultUserShell = pkgs.zsh;
 
           services.displayManager.autoLogin.enable = false;
@@ -346,8 +345,6 @@
             settings = {
               CPU_SCALING_GOVERNOR_ON_AC = "performance";
               CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
-              CPU_BOOST_ON_AC = 1;
-              CPU_BOOST_ON_BAT = 0;
             };
           };
 
