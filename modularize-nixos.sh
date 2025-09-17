@@ -1,41 +1,38 @@
-Excellent! Let's break this configuration down into a modular structure. This will make it much easier to manage, understand, and update.
+#!/bin/bash
 
-I'll provide a step-by-step guide to reorganizing your configuration.
+# NixOS Modular Configuration Setup Script
+# This script creates a modular structure for your NixOS configuration
 
-Step 1: Create the Directory Structure
+set -e  # Exit on any error
 
-Create these files in your /etc/nixos/ directory:
+# Define the base directory (run from /etc/nixos)
+BASE_DIR="/etc/nixos"
+BACKUP_DIR="$BASE_DIR/backup-$(date +%Y%m%d-%H%M%S)"
 
-```
-/etc/nixos/
-├── configuration.nix          # Main file that imports everything
-├── hardware-configuration.nix # (Already exists)
-├── system/
-│   ├── boot.nix
-│   ├── networking.nix
-│   └── security.nix
-├── hardware/
-│   ├── default.nix
-│   ├── audio.nix
-│   ├── graphics.nix
-│   └── bluetooth.nix
-├── users/
-│   └── default.nix
-├── desktop/
-│   ├── default.nix
-│   └── plasma.nix
-└── packages/
-    ├── default.nix
-    ├── cli-tools.nix
-    ├── dev-tools.nix
-    └── gui-apps.nix
-```
+echo "Creating modular NixOS configuration structure..."
+echo "Backing up existing files to $BACKUP_DIR"
 
-Step 2: Main Configuration File (configuration.nix)
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
 
-/etc/nixos/configuration.nix:
+# Backup existing files
+if [ -f "$BASE_DIR/configuration.nix" ]; then
+  cp "$BASE_DIR/configuration.nix" "$BACKUP_DIR/"
+fi
 
-```nix
+if [ -f "$BASE_DIR/hardware-configuration.nix" ]; then
+  cp "$BASE_DIR/hardware-configuration.nix" "$BACKUP_DIR/"
+fi
+
+# Create directory structure
+mkdir -p "$BASE_DIR/system"
+mkdir -p "$BASE_DIR/hardware"
+mkdir -p "$BASE_DIR/users"
+mkdir -p "$BASE_DIR/desktop"
+mkdir -p "$BASE_DIR/packages"
+
+# Create main configuration.nix
+cat > "$BASE_DIR/configuration.nix" << 'EOF'
 { config, pkgs, lib, ... }:
 
 let
@@ -70,13 +67,12 @@ in
 
   system.stateVersion = "25.05";
 }
-```
+EOF
 
-Step 3: System Configuration Files
+# Create system configuration files
 
-/etc/nixos/system/boot.nix:
-
-```nix
+# boot.nix
+cat > "$BASE_DIR/system/boot.nix" << 'EOF'
 { config, pkgs, lib, ... }:
 
 let
@@ -113,11 +109,10 @@ in
     "snd-aloop"
   ];
 }
-```
+EOF
 
-/etc/nixos/system/networking.nix:
-
-```nix
+# networking.nix
+cat > "$BASE_DIR/system/networking.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -131,11 +126,10 @@ in
 
   services.openssh.enable = true;
 }
-```
+EOF
 
-/etc/nixos/system/security.nix:
-
-```nix
+# security.nix
+cat > "$BASE_DIR/system/security.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -152,13 +146,12 @@ in
     execWheelOnly = true;
   };
 }
-```
+EOF
 
-Step 4: Hardware Configuration Files
+# Create hardware configuration files
 
-/etc/nixos/hardware/default.nix:
-
-```nix
+# hardware/default.nix
+cat > "$BASE_DIR/hardware/default.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -168,11 +161,10 @@ Step 4: Hardware Configuration Files
     ./bluetooth.nix
   ];
 }
-```
+EOF
 
-/etc/nixos/hardware/graphics.nix:
-
-```nix
+# hardware/graphics.nix
+cat > "$BASE_DIR/hardware/graphics.nix" << 'EOF'
 { config, pkgs, lib, ... }:
 
 let
@@ -194,11 +186,10 @@ in
     ] ++ lib.optional (gpuType == "amd") pkgs.driversi686Linux.amdvlk;
   };
 }
-```
+EOF
 
-/etc/nixos/hardware/audio.nix:
-
-```nix
+# hardware/audio.nix
+cat > "$BASE_DIR/hardware/audio.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -210,11 +201,10 @@ in
     jack.enable = true;
   };
 }
-```
+EOF
 
-/etc/nixos/hardware/bluetooth.nix:
-
-```nix
+# hardware/bluetooth.nix
+cat > "$BASE_DIR/hardware/bluetooth.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -225,13 +215,10 @@ in
   
   services.blueman.enable = true;
 }
-```
+EOF
 
-Step 5: User Configuration
-
-/etc/nixos/users/default.nix:
-
-```nix
+# Create users configuration
+cat > "$BASE_DIR/users/default.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -253,13 +240,12 @@ Step 5: User Configuration
     syntaxHighlighting.enable = true;
   };
 }
-```
+EOF
 
-Step 6: Desktop Environment
+# Create desktop configuration files
 
-/etc/nixos/desktop/default.nix:
-
-```nix
+# desktop/default.nix
+cat > "$BASE_DIR/desktop/default.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -279,11 +265,10 @@ Step 6: Desktop Environment
   
   services.displayManager.autoLogin.enable = false;
 }
-```
+EOF
 
-/etc/nixos/desktop/plasma.nix:
-
-```nix
+# desktop/plasma.nix
+cat > "$BASE_DIR/desktop/plasma.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -301,13 +286,12 @@ Step 6: Desktop Environment
     variant = "";
   };
 }
-```
+EOF
 
-Step 7: Package Management
+# Create packages configuration
 
-/etc/nixos/packages/default.nix:
-
-```nix
+# packages/default.nix
+cat > "$BASE_DIR/packages/default.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -321,11 +305,10 @@ Step 7: Package Management
     # Global packages that don't fit categories
   ];
 }
-```
+EOF
 
-/etc/nixos/packages/cli-tools.nix:
-
-```nix
+# packages/cli-tools.nix
+cat > "$BASE_DIR/packages/cli-tools.nix" << 'EOF'
 { config, pkgs, ... }:
 
 {
@@ -351,23 +334,53 @@ Step 7: Package Management
     aircrack-ng ettercap openvpn wireguard-tools
   ];
 }
-```
+EOF
 
-Continue this pattern for dev-tools.nix and gui-apps.nix with the respective packages.
+# packages/dev-tools.nix
+cat > "$BASE_DIR/packages/dev-tools.nix" << 'EOF'
+{ config, pkgs, ... }:
 
-Benefits of This Structure:
+{
+  environment.systemPackages = with pkgs; [
+    # Infrastructure as Code
+    ansible packer terraform
+    
+    # Containerization
+    docker docker-compose podman
+    
+    # Programming Languages
+    go nodejs perl python3 python3Packages.pip pipx rustup
+    
+    # Build Tools
+    cmake gcc
+  ];
+}
+EOF
 
-1. Modularity: Each component is separated and manageable
-2. Maintainability: Easier to update specific sections
-3. Readability: Clear organization makes the config more understandable
-4. Reusability: Easy to share or reuse configuration parts
-5. Debugging: Isolates issues to specific modules
+# packages/gui-apps.nix
+cat > "$BASE_DIR/packages/gui-apps.nix" << 'EOF'
+{ config, pkgs, ... }:
 
-Final Steps:
+{
+  environment.systemPackages = with pkgs; [
+    # Browsers & Communication
+    chromium firefox signal-desktop telegram-desktop thunderbird
+    
+    # Multimedia
+    audacity handbrake mpv spotify vlc
+    
+    # Graphics & Design
+    gimp inkscape krita kdePackages.okular zathura
+  ];
+}
+EOF
 
-1. Create the directory structure
-2. Copy the content to each file
-3. Test with sudo nixos-rebuild dry-activate
-4. Apply with sudo nixos-rebuild switch
-
-Would you like me to help you create any specific module in more detail?
+echo "Modular configuration structure created successfully!"
+echo "Your original files have been backed up to: $BACKUP_DIR"
+echo ""
+echo "Next steps:"
+echo "1. Review the generated files to ensure they match your requirements"
+echo "2. Run: sudo nixos-rebuild dry-activate to test the configuration"
+echo "3. Run: sudo nixos-rebuild switch to apply the new configuration"
+echo ""
+echo "Note: You may need to adjust the GPU type in hardware/graphics.nix if needed"
