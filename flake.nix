@@ -436,7 +436,7 @@
             auditd.enable = true;
           };
 
- #         system.stateVersion = "25.05";
+          system.stateVersion = "25.05";
         })
         # Home Manager module
         home-manager.nixosModules.home-manager
