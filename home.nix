@@ -4,7 +4,7 @@
 {
   home.username = "togo-gt";
   home.homeDirectory = "/home/togo-gt";
-  home.stateVersion = "25.05";
+  home.stateVersion = "23.11";
 
   programs.home-manager.enable = true;
 
