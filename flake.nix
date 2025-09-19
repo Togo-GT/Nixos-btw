@@ -3,9 +3,14 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    # Home Manager for user-specific configuration
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
     nixosConfigurations.nixos-btw = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
@@ -181,6 +186,15 @@
             };
             autosuggestions.enable = true;
             syntaxHighlighting.enable = true;
+          };
+
+          # =============================================================================
+          # HOME MANAGER CONFIGURATION
+          # =============================================================================
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            users.togo-gt = import ./home.nix;
           };
 
           users.users.togo-gt = {
@@ -422,8 +436,10 @@
             auditd.enable = true;
           };
 
-          system.stateVersion = "25.05";
+ #         system.stateVersion = "25.05";
         })
+        # Home Manager module
+        home-manager.nixosModules.home-manager
       ];
     };
   };
