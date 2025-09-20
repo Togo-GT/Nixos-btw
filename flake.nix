@@ -25,7 +25,7 @@
                # =============================================================================
         # HOME MANAGER CONFIGURATION
         # =============================================================================
-        {
+
            # User definition must be in this module
           users.users.togo-gt = {
             isNormalUser = true;
