@@ -11,9 +11,54 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: {
+  outputs = { self, nixpkgs, home-manager, ... }@inputs:
+  let
+    system = "x86_64-linux";
+    pkgs = import nixpkgs {
+      inherit system;
+      config.allowUnfree = true;
+      config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or (lib.getName pkg)) [
+        "packer"
+        "nvidia-x11"
+        "nvidia-settings"
+        "steam"
+        "steam-run"
+        "spotify"
+        "vscode"
+        "discord"
+        "zoom"
+        "slack"
+        "skype"
+        "teamviewer"
+        "anydesk"
+        "onedrive"
+        "dropbox"
+        "google-chrome"
+        "google-chrome-dev"
+        "microsoft-edge"
+        "opera"
+        "brave"
+        "signal-desktop"
+        "telegram-desktop"
+        "thunderbird"
+        "vlc"
+        "gimp"
+        "inkscape"
+        "krita"
+        "okular"
+        "obs-studio"
+        "lutris"
+        "wine"
+        "gamemode"
+        "mangohud"
+        "protonup-qt"
+        "transmission"
+      ];
+    };
+    lib = nixpkgs.lib;
+  in {
     nixosConfigurations.nixos-btw = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
+      inherit system;
 
       modules = [
         ({ config, pkgs, lib, modulesPath, ... }:
@@ -210,6 +255,15 @@
           programs.firefox.enable = true;
 
           nixpkgs.config.allowUnfree = true;
+          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+            "packer"
+            "nvidia-x11"
+            "nvidia-settings"
+            "steam"
+            "steam-run"
+            "spotify"
+            "vscode"
+          ];
 
           nix.settings = {
             experimental-features = [ "nix-command" "flakes" ];
@@ -358,6 +412,8 @@
         # Home Manager configuration
         {
           home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
             backupFileExtension = "backup";
             users.togo-gt = import ./home.nix;
           };

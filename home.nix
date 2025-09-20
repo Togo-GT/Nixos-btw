@@ -43,7 +43,7 @@
     curlie
     fzf
     starship
-    taskwarrior3
+    taskwarrior
     tldr
     tmuxp
     watch
@@ -65,7 +65,7 @@
     wireguard-tools
     podman
     ansible
-    packer
+    # packer removed due to unfree license issues
     terraform
     docker-compose
     go
@@ -100,7 +100,7 @@
     obs-studio
     paprefs
     protonup-qt
-    transmission_3-gtk
+    transmission-gtk
     lutris
     wine
     gamemode
