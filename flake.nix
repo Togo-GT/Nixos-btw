@@ -268,8 +268,6 @@
           services.fstrim.enable = true;
           services.earlyoom.enable = true;
           services.flatpak.enable = true;
-          security.protectKernelImage = true;
-          security.sudo.execWheelOnly = true;
 
           # Ensure power-profiles-daemon is fully disabled when using TLP
           services.power-profiles-daemon.enable = lib.mkForce false;
