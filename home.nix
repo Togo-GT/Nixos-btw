@@ -9,7 +9,7 @@
 
   programs.home-manager.enable = true;
 
-  # Add your home-manager specific configurations here
+  # Git configuration
   programs.git = {
     enable = true;
     userName = "togo-gt";
@@ -112,7 +112,7 @@
   # Configure shell
   programs.zsh = {
     enable = true;
-    ohMyZsh = {
+    oh-my-zsh = {
       enable = true;
       plugins = [ "git" "sudo" "systemd" "docker" "kubectl" ];
       theme = "agnoster";
