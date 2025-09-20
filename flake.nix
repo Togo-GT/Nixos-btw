@@ -57,6 +57,7 @@
           boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "acpi_call" ];  # Added acpi_call
           boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];  # Added acpi_call
 
+
           fileSystems."/" = {
             device = "/dev/disk/by-uuid/e022ad77-03e6-4ec3-8cf6-5c770fc84bcf";
             fsType = "ext4";
