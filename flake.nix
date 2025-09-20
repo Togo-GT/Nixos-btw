@@ -1,3 +1,4 @@
+# flake.nix
 {
   description = "NixOS configuration with flakes";
 
@@ -52,7 +53,10 @@
           # SYSTEM CONFIGURATION (from configuration.nix)
           # =============================================================================
           boot = {
-            loader.systemd-boot.enable = true;
+            loader.systemd-boot = {
+              enable = true;
+              configurationLimit = 10;
+            };
             loader.efi.canTouchEfiVariables = true;
             kernelPackages = pkgs.linuxPackages_latest;
             kernelParams = [
@@ -60,6 +64,12 @@
               "nohibernate" "nvreg_EnableMSI=1"
             ];
           };
+
+          # Optimus setup
+          services.xserver.displayManager.setupCommands = ''
+            ${pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource modesetting NVIDIA-0
+            ${pkgs.xorg.xrandr}/bin/xrandr --auto
+          '';
 
           hardware.nvidia = {
             modesetting.enable = true;
@@ -188,16 +198,6 @@
             syntaxHighlighting.enable = true;
           };
 
-          # =============================================================================
-          # HOME MANAGER CONFIGURATION
-          # =============================================================================
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-             backupFileExtension = "backup";
-            users.togo-gt = import ./home.nix;
-          };
-
           users.users.togo-gt = {
             isNormalUser = true;
             description = "Togo-GT";
@@ -237,121 +237,39 @@
             options = "--delete-older-than 7d";
           };
 
+          # Reduced system packages - move most to home.nix
           environment.systemPackages = with pkgs; [
-            broot
-            dust
-            duf
-            fselect
-            ncdu
-            zoxide
-            bat
-            bat-extras.batdiff
-            bat-extras.batgrep
-            bat-extras.batman
-            bat-extras.batpipe
-            micro
-            neovim
-            ripgrep
-            ripgrep-all
-            btop
-            bottom
-            htop
-            glances
-            iotop
-            nethogs
-            powertop
-            borgbackup
-            rsnapshot
-            rsync
+            # Essential system tools
             gitFull
             curl
-            curlie
-            fzf
-            starship
-            taskwarrior3
-            tldr
+            wget
+            vim
+            neovim
             tmux
-            tmuxp
-            watch
-            zsh
-            zsh-autosuggestions
-            zsh-syntax-highlighting
-            aircrack-ng
-            cmatrix
-            file
-            fortune
-            openssl
-            iperf3
-            nmap
-            masscan
-            tcpdump
-            tcpflow
-            traceroute
-            ettercap
-            openvpn
-            wireguard-tools
-            podman
-            ansible
-            packer
-            terraform
-            docker
-            docker-compose
-            go
-            nodejs
-            perl
-            python3
-            python3Packages.pip
-            pipx
-            rustup
-            cmake
-            gcc
-            chromium
-            firefox
-            signal-desktop
-            telegram-desktop
-            thunderbird
-            audacity
-            handbrake
-            mpv
-            spotify
-            vlc
-            gimp
-            inkscape
-            krita
-            kdePackages.okular
-            zathura
-            distrobox
-            kdePackages.dolphin
-            evince
-            feh
-            gparted
-            kdePackages.konsole
-            obs-studio
-            paprefs
-            protonup-qt
-            transmission_3-gtk
-            lutris
-            wine
-            clinfo
-            glxinfo
-            vulkan-loader
-            vulkan-tools
+            htop
+            btop
+            ncdu
+            nix-index
+            home-manager
+
+            # Hardware-specific
             nvidia-vaapi-driver
             dmidecode
             inxi
             pciutils
             smartmontools
             ntfs3g
-            gamemode
-            mangohud
-            libnotify
-            libva-utils
-            home-manager
+            clinfo
+            glxinfo
+            vulkan-loader
+            vulkan-tools
           ];
 
           services.fstrim.enable = true;
           services.earlyoom.enable = true;
           services.flatpak.enable = true;
+          security.protectKernelImage = true;
+          security.sudo.execWheelOnly = true;
 
           # Ensure power-profiles-daemon is fully disabled when using TLP
           services.power-profiles-daemon.enable = lib.mkForce false;
@@ -440,6 +358,17 @@
 
           system.stateVersion = "25.05";
         })
+
+        # =============================================================================
+        # HOME MANAGER CONFIGURATION
+        # =============================================================================
+        {
+          home-manager = {
+            backupFileExtension = "backup";
+            users.togo-gt = import ./home.nix;
+          };
+        }
+
         # Home Manager module
         home-manager.nixosModules.home-manager
       ];
