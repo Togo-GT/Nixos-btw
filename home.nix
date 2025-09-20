@@ -126,7 +126,7 @@
     obs-studio
     paprefs
     protonup-qt
-    transmission-gtk
+    transmission_4-gtk
 
     # Gaming
     lutris
