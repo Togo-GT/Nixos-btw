@@ -146,18 +146,25 @@
     libva-utils
   ];
 
-  # Configure shell
-  programs.zsh = {
+programs.zsh = {
+  enable = true;
+
+  # Oh My Zsh configuration
+  oh-my-zsh = {
     enable = true;
-    oh-my-zsh = {
-      enable = true;
-      plugins = [ "git" "sudo" "systemd" "docker" "kubectl" ];
-      theme = "agnoster";
-    };
-    initContent = ''
-      # Custom aliases or settings
-      alias ll='ls -l'
-      alias nix-update='sudo nixos-rebuild switch --flake .#'
-    '';
+    theme = "agnoster";
+    plugins = [ "git" "sudo" "systemd" "docker" "kubectl" ];
   };
-}
+
+  # Custom aliases or settings
+  initContent = ''
+    alias ll='ls -l'
+    alias nix-update='sudo nixos-rebuild switch --flake .#'
+  '';
+
+  # Extra environment variables or paths
+  initExtra = ''
+    export PATH="$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin:$PATH"
+  '';
+};
+
