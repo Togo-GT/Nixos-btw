@@ -21,12 +21,9 @@
           gpuType = "optimus";
         in
         {
-
-               # =============================================================================
-        # HOME MANAGER CONFIGURATION
-        # =============================================================================
-
-           # User definition must be in this module
+          # =============================================================================
+          # USER CONFIGURATION
+          # =============================================================================
           users.users.togo-gt = {
             isNormalUser = true;
             description = "Togo-GT";
@@ -36,29 +33,14 @@
               kdePackages.kate
             ];
           };
-        }
 
-        # Home Manager module
-        home-manager.nixosModules.home-manager
-
-        # Home Manager configuration (now processed after system config)
-        {
-          home-manager = {
-            backupFileExtension = "backup";
-            users.togo-gt = import ./home.nix;
-          };
-        }
-
-        # =============================================================================
-        # HARDWARE CONFIGURATION (from hardware-configuration.nix)
-        # =============================================================================
-        boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
-        boot.initrd.kernelModules = [ ];
-        boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "acpi_call" ];
-        boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call v4l2loopback ];
-
-
-
+          # =============================================================================
+          # HARDWARE CONFIGURATION (from hardware-configuration.nix)
+          # =============================================================================
+          boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
+          boot.initrd.kernelModules = [ ];
+          boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "acpi_call" ];
+          boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];
 
           fileSystems."/" = {
             device = "/dev/disk/by-uuid/e022ad77-03e6-4ec3-8cf6-5c770fc84bcf";
@@ -78,7 +60,7 @@
           networking.useDHCP = lib.mkDefault true;
           nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
           hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-          hardware.enableRedistributableFirmware = true;  # Added firmware updates
+          hardware.enableRedistributableFirmware = true;
 
           # =============================================================================
           # SYSTEM CONFIGURATION (from configuration.nix)
@@ -179,7 +161,7 @@
               LC_TIME = "da_DK.UTF-8";
               LC_MONETARY = "da_DK.UTF-8";
               LC_ADDRESS = "da_DK.UTF-8";
-              LC_IDENTIFICATION = "da_DK.UTF-8";  # Fixed spelling
+              LC_IDENTIFICATION = "da_DK.UTF-8";
               LC_MEASUREMENT = "da_DK.UTF-8";
               LC_PAPER = "da_DK.UTF-8";
               LC_TELEPHONE = "da_DK.UTF-8";
@@ -218,8 +200,6 @@
 
           programs.dconf.enable = true;
 
-
-
           users.defaultUserShell = pkgs.zsh;
 
           services.displayManager.autoLogin.enable = false;
@@ -231,8 +211,8 @@
           nix.settings = {
             experimental-features = [ "nix-command" "flakes" ];
             auto-optimise-store = true;
-            keep-outputs = true;  # Added for better dev environment support
-            keep-derivations = true;  # Added for better dev environment support
+            keep-outputs = true;
+            keep-derivations = true;
             substituters = [
               "https://cache.nixos.org"
               "https://nix-community.cachix.org"
@@ -368,6 +348,17 @@
 
           system.stateVersion = "25.05";
         })
+
+        # Home Manager module
+        home-manager.nixosModules.home-manager
+
+        # Home Manager configuration
+        {
+          home-manager = {
+            backupFileExtension = "backup";
+            users.togo-gt = import ./home.nix;
+          };
+        }
       ];
     };
   };
