@@ -254,17 +254,6 @@
 
           programs.firefox.enable = true;
 
-          nixpkgs.config.allowUnfree = true;
-          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-            "packer"
-            "nvidia-x11"
-            "nvidia-settings"
-            "steam"
-            "steam-run"
-            "spotify"
-            "vscode"
-          ];
-
           nix.settings = {
             experimental-features = [ "nix-command" "flakes" ];
             auto-optimise-store = true;
@@ -419,6 +408,12 @@
           };
         }
       ];
+    };
+
+    # Add homeConfigurations output
+    homeConfigurations."togo-gt@nixos-btw" = home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      modules = [ ./home.nix ];
     };
   };
 }
