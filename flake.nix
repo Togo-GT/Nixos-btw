@@ -342,14 +342,28 @@
         # HOME MANAGER CONFIGURATION
         # =============================================================================
         {
+           # User definition must be in this module
+          users.users.togo-gt = {
+            isNormalUser = true;
+            description = "Togo-GT";
+            extraGroups = [ "networkmanager" "wheel" "input" "docker" "libvirtd" ];
+            shell = pkgs.zsh;
+            packages = with pkgs; [
+              kdePackages.kate
+            ];
+          };
+        })
+
+        # Home Manager module
+        home-manager.nixosModules.home-manager
+
+        # Home Manager configuration (now processed after system config)
+        {
           home-manager = {
             backupFileExtension = "backup";
             users.togo-gt = import ./home.nix;
           };
         }
-
-        # Home Manager module
-        home-manager.nixosModules.home-manager
       ];
     };
   };
