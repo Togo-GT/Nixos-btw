@@ -58,7 +58,7 @@
     zsh-syntax-highlighting
 
     # Task management
-    taskwarrior
+    taskwarrior3
     tldr
     tmuxp
     watch
