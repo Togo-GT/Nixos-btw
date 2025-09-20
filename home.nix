@@ -147,7 +147,7 @@
       plugins = [ "git" "sudo" "systemd" "docker" "kubectl" ];
       theme = "agnoster";
     };
-    initExtra = ''
+    initContent = ''
       # Custom aliases or settings
       alias ll='ls -l'
       alias nix-update='sudo nixos-rebuild switch --flake .#'
