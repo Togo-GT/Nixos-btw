@@ -50,12 +50,13 @@
         }
 
         # =============================================================================
-          # HARDWARE CONFIGURATION (from hardware-configuration.nix)
-          # =============================================================================
-          boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
-          boot.initrd.kernelModules = [ ];
-          boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "acpi_call" ];  # Added acpi_call
-          boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ];  # Added acpi_call
+        # HARDWARE CONFIGURATION (from hardware-configuration.nix)
+        # =============================================================================
+        boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
+        boot.initrd.kernelModules = [ ];
+        boot.kernelModules = [ "kvm-intel" "fuse" "v4l2loopback" "snd-aloop" "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" "acpi_call" ]; # Added acpi_call
+        boot.extraModulePackages = with config.boot.kernelPackages; [ acpi_call ]; # Added acpi_call
+
 
 
           fileSystems."/" = {
