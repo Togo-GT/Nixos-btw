@@ -34,6 +34,9 @@
             ];
           };
 
+          # Enable Z shell system-wide
+          programs.zsh.enable = true;
+
           # =============================================================================
           # HARDWARE CONFIGURATION (from hardware-configuration.nix)
           # =============================================================================
