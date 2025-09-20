@@ -1,10 +1,8 @@
-# flake.nix
 {
   description = "NixOS configuration with flakes";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
-    # Home Manager for user-specific configuration
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -14,58 +12,69 @@
   outputs = { self, nixpkgs, home-manager, ... }@inputs:
   let
     system = "x86_64-linux";
+
+    # List of packages that require unfree licensing
+    unfreePackages = [
+      "nvidia-x11"
+      "nvidia-settings"
+      "steam"
+      "steam-run"
+      "spotify"
+      "vscode"
+      "discord"
+      "zoom"
+      "slack"
+      "skype"
+      "teamviewer"
+      "anydesk"
+      "onedrive"
+      "dropbox"
+      "google-chrome"
+      "google-chrome-dev"
+      "microsoft-edge"
+      "opera"
+      "brave"
+      "signal-desktop"
+      "telegram-desktop"
+      "thunderbird"
+      "vlc"
+      "gimp"
+      "inkscape"
+      "krita"
+      "okular"
+      "obs-studio"
+      "lutris"
+      "wine"
+      "gamemode"
+      "mangohud"
+      "protonup-qt"
+      "transmission"
+    ];
+
+    # Import nixpkgs with unfree packages allowed
     pkgs = import nixpkgs {
       inherit system;
       config.allowUnfree = true;
-      config.allowUnfreePredicate = pkg: builtins.elem (pkg.pname or (lib.getName pkg)) [
-        "packer"
-        "nvidia-x11"
-        "nvidia-settings"
-        "steam"
-        "steam-run"
-        "spotify"
-        "vscode"
-        "discord"
-        "zoom"
-        "slack"
-        "skype"
-        "teamviewer"
-        "anydesk"
-        "onedrive"
-        "dropbox"
-        "google-chrome"
-        "google-chrome-dev"
-        "microsoft-edge"
-        "opera"
-        "brave"
-        "signal-desktop"
-        "telegram-desktop"
-        "thunderbird"
-        "vlc"
-        "gimp"
-        "inkscape"
-        "krita"
-        "okular"
-        "obs-studio"
-        "lutris"
-        "wine"
-        "gamemode"
-        "mangohud"
-        "protonup-qt"
-        "transmission"
-      ];
+      config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) unfreePackages;
     };
+
     lib = nixpkgs.lib;
   in {
-    nixosConfigurations.nixos-btw = nixpkgs.lib.nixosSystem {
-      inherit system;
+    # NixOS system configuration
+    nixosConfigurations.nixos-btw = lib.nixosSystem {
+      inherit system pkgs;
 
       modules = [
-        ({ config, pkgs, lib, modulesPath, ... }:
+        # System configuration module
+        ({ config, lib, modulesPath, ... }:
         let
           gpuType = "optimus";
         in
         {
+          # Allow unfree packages in system configuration
+          nixpkgs.config.allowUnfree = true;
+          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreePackages;
+
           # =============================================================================
           # USER CONFIGURATION
           # =============================================================================
@@ -74,16 +83,14 @@
             description = "Togo-GT";
             extraGroups = [ "networkmanager" "wheel" "input" "docker" "libvirtd" ];
             shell = pkgs.zsh;
-            packages = with pkgs; [
-              kdePackages.kate
-            ];
+            packages = with pkgs; [ kdePackages.kate ];
           };
 
           # Enable Z shell system-wide
           programs.zsh.enable = true;
 
           # =============================================================================
-          # HARDWARE CONFIGURATION (from hardware-configuration.nix)
+          # HARDWARE CONFIGURATION
           # =============================================================================
           boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod" "sdhci_pci" ];
           boot.initrd.kernelModules = [ ];
@@ -111,7 +118,7 @@
           hardware.enableRedistributableFirmware = true;
 
           # =============================================================================
-          # SYSTEM CONFIGURATION (from configuration.nix)
+          # SYSTEM CONFIGURATION
           # =============================================================================
           boot = {
             loader.systemd-boot = {
@@ -126,12 +133,13 @@
             ];
           };
 
-          # Optimus setup
+          # Optimus setup for NVIDIA GPU
           services.xserver.displayManager.setupCommands = ''
             ${pkgs.xorg.xrandr}/bin/xrandr --setprovideroutputsource modesetting NVIDIA-0
             ${pkgs.xorg.xrandr}/bin/xrandr --auto
           '';
 
+          # NVIDIA graphics configuration
           hardware.nvidia = {
             modesetting.enable = true;
             powerManagement.enable = true;
@@ -145,26 +153,10 @@
             };
           };
 
-          hardware.graphics = {
-            enable = true;
-            enable32Bit = true;
-            extraPackages = with pkgs; [
-              vaapiVdpau
-              libvdpau-va-gl
-              mesa
-            ] ++ lib.optionals (gpuType == "nvidia" || gpuType == "optimus") [
-              nvidia-vaapi-driver
-            ];
-            extraPackages32 = with pkgs.pkgsi686Linux; [
-              libva
-              mesa
-            ] ++ lib.optionals (gpuType == "nvidia" || gpuType == "optimus") [
-              nvidia-vaapi-driver
-            ];
-          };
-
+          # Printing services
           services.printing.enable = true;
 
+          # Audio services
           security.rtkit.enable = true;
           services.pipewire = {
             enable = true;
@@ -174,17 +166,20 @@
             jack.enable = true;
           };
 
+          # Bluetooth configuration
           hardware.bluetooth = {
             enable = true;
             powerOnBoot = true;
           };
           services.blueman.enable = true;
 
+          # Networking configuration
           networking = {
             hostName = "nixos-btw";
             networkmanager.enable = true;
           };
 
+          # Time and localization
           time.timeZone = "Europe/Copenhagen";
           services.timesyncd = {
             enable = true;
@@ -224,6 +219,7 @@
 
           console.keyMap = "dk-latin1";
 
+          # Desktop environment (Plasma 6)
           services.xserver = {
             enable = true;
             videoDrivers = [ "nvidia" ];
@@ -249,11 +245,12 @@
           programs.dconf.enable = true;
 
           users.defaultUserShell = pkgs.zsh;
-
           services.displayManager.autoLogin.enable = false;
 
+          # Browser
           programs.firefox.enable = true;
 
+          # Nix configuration
           nix.settings = {
             experimental-features = [ "nix-command" "flakes" ];
             auto-optimise-store = true;
@@ -275,7 +272,7 @@
             options = "--delete-older-than 7d";
           };
 
-          # Reduced system packages - move most to home.nix
+          # System packages (minimal set, most packages are in home.nix)
           environment.systemPackages = with pkgs; [
             # Essential system tools
             gitFull
@@ -286,11 +283,10 @@
             tmux
             htop
             btop
-            ncdu
             nix-index
             home-manager
 
-            # Hardware-specific
+            # Hardware-specific tools
             nvidia-vaapi-driver
             dmidecode
             inxi
@@ -303,11 +299,12 @@
             vulkan-tools
           ];
 
+          # System services
           services.fstrim.enable = true;
           services.earlyoom.enable = true;
           services.flatpak.enable = true;
 
-          # Ensure power-profiles-daemon is fully disabled when using TLP
+          # Power management
           services.power-profiles-daemon.enable = lib.mkForce false;
           systemd.user.services."power-profiles-daemon" = {
             enable = false;
@@ -322,6 +319,7 @@
             };
           };
 
+          # Gaming
           programs.steam = {
             enable = true;
             remotePlay.openFirewall = true;
@@ -330,8 +328,10 @@
           programs.gamescope.enable = true;
           programs.gamemode.enable = true;
 
+          # Hardware support
           services.hardware.bolt.enable = true;
 
+          # Virtualization
           virtualisation = {
             docker = {
               enable = true;
@@ -349,6 +349,7 @@
             };
           };
 
+          # Additional services
           services = {
             avahi = {
               enable = true;
@@ -358,6 +359,7 @@
             thermald.enable = true;
           };
 
+          # Fonts
           fonts = {
             enableDefaultPackages = true;
             packages = with pkgs; [
@@ -376,6 +378,7 @@
             };
           };
 
+          # Security
           services.openssh.enable = true;
 
           networking.firewall = {
@@ -395,10 +398,8 @@
           system.stateVersion = "25.05";
         })
 
-        # Home Manager module
+        # Home Manager integration
         home-manager.nixosModules.home-manager
-
-        # Home Manager configuration
         {
           home-manager = {
             useGlobalPkgs = true;
@@ -410,7 +411,7 @@
       ];
     };
 
-    # Add homeConfigurations output
+    # Home Manager standalone configuration
     homeConfigurations."togo-gt@nixos-btw" = home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [ ./home.nix ];

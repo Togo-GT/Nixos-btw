@@ -16,14 +16,17 @@
     userEmail = "michael.kaare.nielsen@gmail.com";
   };
 
+  # User packages
   home.packages = with pkgs; [
-    # User-specific packages
+    # File utilities
     broot
     dust
     duf
     fselect
     ncdu
     zoxide
+
+    # Text processing and viewing
     bat
     bat-extras.batdiff
     bat-extras.batgrep
@@ -32,23 +35,35 @@
     micro
     ripgrep
     ripgrep-all
+
+    # System monitoring
     bottom
     glances
     iotop
     nethogs
     powertop
+
+    # Backup and sync
     borgbackup
     rsnapshot
     rsync
+
+    # Network utilities
     curlie
     fzf
+
+    # Shell enhancements
     starship
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+
+    # Task management
     taskwarrior
     tldr
     tmuxp
     watch
-    zsh-autosuggestions
-    zsh-syntax-highlighting
+
+    # Security and networking tools
     aircrack-ng
     cmatrix
     file
@@ -63,9 +78,10 @@
     ettercap
     openvpn
     wireguard-tools
+
+    # Development and containers
     podman
     ansible
-    # packer removed due to unfree license issues
     terraform
     docker-compose
     go
@@ -77,20 +93,30 @@
     rustup
     cmake
     gcc
+
+    # Web browsers
     chromium
+
+    # Communication
     signal-desktop
     telegram-desktop
     thunderbird
+
+    # Multimedia
     audacity
     handbrake
     mpv
     spotify
     vlc
+
+    # Graphics
     gimp
     inkscape
     krita
     kdePackages.okular
     zathura
+
+    # Utilities
     distrobox
     kdePackages.dolphin
     evince
@@ -101,10 +127,14 @@
     paprefs
     protonup-qt
     transmission-gtk
+
+    # Gaming
     lutris
     wine
     gamemode
     mangohud
+
+    # System utilities
     libnotify
     libva-utils
   ];
