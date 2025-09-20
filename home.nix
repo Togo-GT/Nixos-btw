@@ -146,7 +146,7 @@
     libva-utils
   ];
 
-programs.zsh = {
+  programs.zsh = {
   enable = true;
 
   # Oh My Zsh configuration
@@ -160,11 +160,11 @@ programs.zsh = {
   initContent = ''
     alias ll='ls -l'
     alias nix-update='sudo nixos-rebuild switch --flake .#'
-  '';
+
 
   # Extra environment variables or paths
-  initExtra = ''
+
     export PATH="$HOME/.nix-profile/bin:/etc/profiles/per-user/$USER/bin:/run/current-system/sw/bin:$PATH"
   '';
-};
-
+  };
+}
