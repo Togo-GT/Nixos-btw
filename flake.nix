@@ -72,8 +72,8 @@
         in
         {
           # Allow unfree packages in system configuration
-          nixpkgs.config.allowUnfree = true;
-          nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreePackages;
+          # nixpkgs.config.allowUnfree = true;
+          # nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) unfreePackages;
 
           # =============================================================================
           # USER CONFIGURATION
