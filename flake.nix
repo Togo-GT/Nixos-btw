@@ -346,6 +346,7 @@
             mangohud
             libnotify
             libva-utils
+            home-manager
           ];
 
           services.fstrim.enable = true;
