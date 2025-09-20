@@ -16,6 +16,13 @@
     userEmail = "michael.kaare.nielsen@gmail.com";
   };
 
+  # Add Home Manager to your PATH
+  home.sessionPath = [
+    "$HOME/.nix-profile/bin"
+    "/etc/profiles/per-user/$USER/bin"
+    "/run/current-system/sw/bin"
+  ];
+
   # User packages
   home.packages = with pkgs; [
     # File utilities
