@@ -352,7 +352,7 @@
               kdePackages.kate
             ];
           };
-        })
+        }
 
         # Home Manager module
         home-manager.nixosModules.home-manager
